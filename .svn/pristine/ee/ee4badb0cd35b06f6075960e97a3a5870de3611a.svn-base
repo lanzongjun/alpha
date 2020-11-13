@@ -1,0 +1,952 @@
+<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
+
+DEBUG - 2020-01-11 13:00:57 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:00:57 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:00:57 --> 清空[2019-12-19]结算记录
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT ba_id FROM balance_account WHERE ba_balance_date='2019-12-19' 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_account_collect WHERE bac_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_account_error WHERE bae_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_shop_storage WHERE bss_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM delay_balance_shop WHERE dbs_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM onsale_storage_shop WHERE oss_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM onsale_yj_shop WHERE oys_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:UPDATE balance_count_eb SET bce_ba_id=0 WHERE bce_ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_account WHERE ba_id=115 
+DEBUG - 2020-01-11 13:00:57 --> 新增结算记录
+DEBUG - 2020-01-11 13:00:57 --> SQL文:INSERT INTO balance_account (ba_balance_date,ba_cpd_remaining_sum,ba_cpd_time,ba_cpd_bill_code,ba_balance_time) SELECT cpd_date,cpd_remaining_sum,cpd_time,cpd_bill_code,'2020-01-11 13:00:57' FROM cash_pool_detail WHERE cpd_bill_code = (SELECT MAX(cpd_bill_code) bill_code FROM cash_pool_detail WHERE cpd_biz_type='支出' AND cpd_date='2019-12-19')
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:57 --> 获取异常订单及商品
+DEBUG - 2020-01-11 13:00:57 --> 获得异常订单并加入异常库
+DEBUG - 2020-01-11 13:00:57 --> 获得缺少结算价的异常商品
+DEBUG - 2020-01-11 13:00:57 --> 结算饿百各站销量
+DEBUG - 2020-01-11 13:00:57 --> SQL文:INSERT INTO balance_shop_storage (bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,bss_bgs_code,bss_bgs_barcode,bss_count,bss_bgs_name,bss_balance_date,bss_ba_id) SELECT bs_org_sn,bs_sale_sn,eoi_shop_name,bbp_yj_code,sge_barcode, SUM(eod_buy_count) t_eod_buy_count, eod_goods_name,'2019-12-19',116 FROM order_info_eb INNER JOIN order_detail_eb ON eoi_code = eod_eoi_code LEFT JOIN shop_goods_eb ON sge_gid = eod_sku_code LEFT JOIN base_balance_price ON bbp_bar_code = sge_barcode LEFT JOIN base_shop_info ON bs_e_id = eoi_shop_id WHERE eoi_is_delete=0 AND eod_buy_count>0 AND eoi_order_state='已完成' AND eoi_order_create_dt LIKE '2019-12-19%' GROUP BY eoi_shop_id,eod_sku_code 
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:00:57 --> 填充结算明细
+DEBUG - 2020-01-11 13:00:57 --> SQL文:INSERT INTO balance_account_detail (bad_bs_org_sn,bad_bs_sale_sn,bad_bs_shop_name,bad_pay_account,bad_bgs_code,bad_bgs_barcode,bad_bbp_settlement_price,bad_count,bad_bgs_name,bad_balance_date,bad_ba_id) SELECT bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,'802320201183858',bss_bgs_code,bss_bgs_barcode,bbp_settlement_price,bss_count,bss_bgs_name,'2019-12-19',116 FROM balance_shop_storage LEFT JOIN base_balance_price ON bbp_bar_code = bss_bgs_barcode WHERE bss_balance_date='2019-12-19' AND bss_ba_id=116 
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:00:57 --> 结算临期库
+DEBUG - 2020-01-11 13:00:57 --> SQL文:UPDATE onsale_yj_conf SET oyc_is_close = 1 WHERE oyc_end_date < '2019-12-19' 
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT oyc_id,oyc_count,oyc_balance_price,bss_count,oyc_bs_org_sn,oyc_bgs_barcode FROM onsale_yj_conf INNER JOIN balance_shop_storage ON bss_bs_org_sn = oyc_bs_org_sn AND oyc_bgs_barcode = bss_bgs_barcode WHERE oyc_is_close = 0 AND oyc_end_date > '2019-12-19' 
+DEBUG - 2020-01-11 13:00:57 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 5 
+DEBUG - 2020-01-11 13:00:57 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:00:57 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(5,3,'2019-12-19','2020-01-11 13:00:57', 116)
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:57 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6923644278588' 
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:00:57 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 6 
+DEBUG - 2020-01-11 13:00:57 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:00:57 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(6,1,'2019-12-19','2020-01-11 13:00:57', 116)
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:57 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285' 
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:00:57 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 10 
+DEBUG - 2020-01-11 13:00:57 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:00:57 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(10,0,'2019-12-19','2020-01-11 13:00:57', 116)
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:57 --> 修改原价结算数量
+DEBUG - 2020-01-11 13:00:57 --> SQL文:UPDATE balance_account_detail SET bad_count=1 WHERE bad_ba_id=116 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285'
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:00:57 --> 结算促销库
+DEBUG - 2020-01-11 13:00:57 --> 结算AB库
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT bad_id,bad_bs_org_sn,bad_bgs_barcode,bad_count FROM balance_account_detail WHERE bad_ba_id=116 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 增加AB库记录
+DEBUG - 2020-01-11 13:00:57 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702002,0,1,3824,116,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:57 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:00:57 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3824 
+DEBUG - 2020-01-11 13:00:57 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6920202888883 数量:2 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920202888883' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6954767453286 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6954767453286' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6908512208720 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6908512208720' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:8855790000141 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '8855790000141' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6959734500611 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6959734500611' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6971187580033 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580033' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6971187580040 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580040' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:57 --> 结算每商户促销产品。商户:3702002 条码:6922307205091 数量:1 
+DEBUG - 2020-01-11 13:00:57 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205091' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702002 条码:6920908402017 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402017' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702002 条码:6920908402024 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402024' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702002 条码:6912999330027 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330027' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702002 条码:6912999330003 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330003' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702002 条码:6901035618601 数量:2 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702006 条码:6901035618601 数量:10 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702007 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702007 条码:2000102550562 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '2000102550562' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702007 条码:6923644266318 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6923644266318' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702030 条码:6902083880781 数量:4 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6902083880781' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702030 条码:6948195814245 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6948195814245' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702030 条码:6955748500029 数量:2 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 增加AB库记录
+DEBUG - 2020-01-11 13:00:58 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702030,0,2,3814,116,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:00:58 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:58 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:00:58 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3814 
+DEBUG - 2020-01-11 13:00:58 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702030 条码:6922307205527 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205527' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702030 条码:6925303714840 数量:4 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6925303714840' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702103 条码:6944312690372 数量:5 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312690372' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702103 条码:6944312683626 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312683626' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 结算每商户促销产品。商户:3702103 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:00:58 --> 增加AB库记录
+DEBUG - 2020-01-11 13:00:58 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702103,0,1,3837,116,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:00:58 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:58 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:00:58 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3837 
+DEBUG - 2020-01-11 13:00:58 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:00:58 --> 结算延期库
+DEBUG - 2020-01-11 13:00:58 --> 结算延期库
+DEBUG - 2020-01-11 13:00:58 --> SQL文:INSERT INTO delay_balance_shop (dbs_dbc_id,dbs_bgs_barcode,dbs_bgs_name,dbs_bs_org_sn,dbs_count,dbs_ba_id,dbs_balance_date) SELECT dbc_id,dbc_bgs_barcode,dbc_bgs_name,bad_bs_org_sn,bad_count,bad_ba_id,bad_balance_date FROM balance_account_detail INNER JOIN delay_balance_conf ON dbc_bgs_barcode=bad_bgs_barcode WHERE bad_ba_id=116
+DEBUG - 2020-01-11 13:00:58 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bgs_barcode IN (SELECT dbc_bgs_barcode FROM delay_balance_conf)
+DEBUG - 2020-01-11 13:00:58 --> 汇总正常结算金额
+DEBUG - 2020-01-11 13:00:58 --> 汇总正常结算金额:268.6
+DEBUG - 2020-01-11 13:00:58 --> 汇总临期结算金额
+DEBUG - 2020-01-11 13:00:58 --> 汇总临期结算金额:6.45
+DEBUG - 2020-01-11 13:00:58 --> 更新易捷结算总金额
+DEBUG - 2020-01-11 13:00:58 --> 汇总饿百平台结算金额
+DEBUG - 2020-01-11 13:00:58 --> 汇总饿百平台结算金额:0
+DEBUG - 2020-01-11 13:00:58 --> 更新饿百结算金额
+DEBUG - 2020-01-11 13:00:58 --> 饿百结算金额为:0,不需更新！
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bs_org_sn = 3702002 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:00:58 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 116 AND oyc_bs_org_sn = 3702002 
+DEBUG - 2020-01-11 13:00:58 --> 临期商品表格:
+DEBUG - 2020-01-11 13:00:58 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=116  AND bs_shop_sn=3702002
+DEBUG - 2020-01-11 13:00:58 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=116  AND bs_shop_sn=3702002
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bs_org_sn = 3702006 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:00:58 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 116 AND oyc_bs_org_sn = 3702006 
+DEBUG - 2020-01-11 13:00:58 --> 临期商品表格:
+DEBUG - 2020-01-11 13:00:58 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=116  AND bs_shop_sn=3702006
+DEBUG - 2020-01-11 13:00:58 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=116  AND bs_shop_sn=3702006
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bs_org_sn = 3702007 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:00:58 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 116 AND oyc_bs_org_sn = 3702007 
+DEBUG - 2020-01-11 13:00:58 --> 临期商品表格:
+DEBUG - 2020-01-11 13:00:58 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=116  AND bs_shop_sn=3702007
+DEBUG - 2020-01-11 13:00:58 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=116  AND bs_shop_sn=3702007
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bs_org_sn = 3702030 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:00:58 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 116 AND oyc_bs_org_sn = 3702030 
+DEBUG - 2020-01-11 13:00:58 --> 临期商品表格:<tr><td>5</td><td>39193</td><td>1.83</td><td>3</td><td>6923644278588</td><td>蒙牛纯甄酸牛奶200g</td><td>临期</td></tr><tr><td>6</td><td>48055</td><td>0.96</td><td>1</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr><tr><td>7</td><td>48055</td><td>1.00</td><td>0</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr>
+DEBUG - 2020-01-11 13:00:58 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=116  AND bs_shop_sn=3702030
+DEBUG - 2020-01-11 13:00:58 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=116  AND bs_shop_sn=3702030
+DEBUG - 2020-01-11 13:00:58 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=116 AND bad_bs_org_sn = 3702103 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:00:58 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 116 AND oyc_bs_org_sn = 3702103 
+DEBUG - 2020-01-11 13:00:58 --> 临期商品表格:
+DEBUG - 2020-01-11 13:00:58 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=116  AND bs_shop_sn=3702103
+DEBUG - 2020-01-11 13:00:58 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=116  AND bs_shop_sn=3702103
+DEBUG - 2020-01-11 13:00:58 --> Total execution time: 0.9839
+DEBUG - 2020-01-11 13:00:58 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:00:58 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:00:58 --> Total execution time: 0.0445
+DEBUG - 2020-01-11 13:03:50 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:03:50 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:03:51 --> 清空[2019-12-19]结算记录
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT ba_id FROM balance_account WHERE ba_balance_date='2019-12-19' 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_collect WHERE bac_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_error WHERE bae_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_shop_storage WHERE bss_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM delay_balance_shop WHERE dbs_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM onsale_storage_shop WHERE oss_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM onsale_yj_shop WHERE oys_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:UPDATE balance_count_eb SET bce_ba_id=0 WHERE bce_ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account WHERE ba_id=116 
+DEBUG - 2020-01-11 13:03:51 --> 新增结算记录
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO balance_account (ba_balance_date,ba_cpd_remaining_sum,ba_cpd_time,ba_cpd_bill_code,ba_balance_time) SELECT cpd_date,cpd_remaining_sum,cpd_time,cpd_bill_code,'2020-01-11 13:03:51' FROM cash_pool_detail WHERE cpd_bill_code = (SELECT MAX(cpd_bill_code) bill_code FROM cash_pool_detail WHERE cpd_biz_type='支出' AND cpd_date='2019-12-19')
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 获取异常订单及商品
+DEBUG - 2020-01-11 13:03:51 --> 获得异常订单并加入异常库
+DEBUG - 2020-01-11 13:03:51 --> 获得缺少结算价的异常商品
+DEBUG - 2020-01-11 13:03:51 --> 结算饿百各站销量
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO balance_shop_storage (bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,bss_bgs_code,bss_bgs_barcode,bss_count,bss_bgs_name,bss_balance_date,bss_ba_id) SELECT bs_org_sn,bs_sale_sn,eoi_shop_name,bbp_yj_code,sge_barcode, SUM(eod_buy_count) t_eod_buy_count, eod_goods_name,'2019-12-19',117 FROM order_info_eb INNER JOIN order_detail_eb ON eoi_code = eod_eoi_code LEFT JOIN shop_goods_eb ON sge_gid = eod_sku_code LEFT JOIN base_balance_price ON bbp_bar_code = sge_barcode LEFT JOIN base_shop_info ON bs_e_id = eoi_shop_id WHERE eoi_is_delete=0 AND eod_buy_count>0 AND eoi_order_state='已完成' AND eoi_order_create_dt LIKE '2019-12-19%' GROUP BY eoi_shop_id,eod_sku_code 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:03:51 --> 填充结算明细
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO balance_account_detail (bad_bs_org_sn,bad_bs_sale_sn,bad_bs_shop_name,bad_pay_account,bad_bgs_code,bad_bgs_barcode,bad_bbp_settlement_price,bad_count,bad_bgs_name,bad_balance_date,bad_ba_id) SELECT bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,'802320201183858',bss_bgs_code,bss_bgs_barcode,bbp_settlement_price,bss_count,bss_bgs_name,'2019-12-19',117 FROM balance_shop_storage LEFT JOIN base_balance_price ON bbp_bar_code = bss_bgs_barcode WHERE bss_balance_date='2019-12-19' AND bss_ba_id=117 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:03:51 --> 结算临期库
+DEBUG - 2020-01-11 13:03:51 --> SQL文:UPDATE onsale_yj_conf SET oyc_is_close = 1 WHERE oyc_end_date < '2019-12-19' 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT oyc_id,oyc_count,oyc_balance_price,bss_count,oyc_bs_org_sn,oyc_bgs_barcode FROM onsale_yj_conf INNER JOIN balance_shop_storage ON bss_bs_org_sn = oyc_bs_org_sn AND oyc_bgs_barcode = bss_bgs_barcode WHERE oyc_is_close = 0 AND oyc_end_date > '2019-12-19' 
+DEBUG - 2020-01-11 13:03:51 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 5 
+DEBUG - 2020-01-11 13:03:51 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(5,3,'2019-12-19','2020-01-11 13:03:51', 117)
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6923644278588' 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:03:51 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 6 
+DEBUG - 2020-01-11 13:03:51 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(6,1,'2019-12-19','2020-01-11 13:03:51', 117)
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285' 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:03:51 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 10 
+DEBUG - 2020-01-11 13:03:51 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(10,0,'2019-12-19','2020-01-11 13:03:51', 117)
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 修改原价结算数量
+DEBUG - 2020-01-11 13:03:51 --> SQL文:UPDATE balance_account_detail SET bad_count=1 WHERE bad_ba_id=117 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285'
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:03:51 --> 结算促销库
+DEBUG - 2020-01-11 13:03:51 --> 结算AB库
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT bad_id,bad_bs_org_sn,bad_bgs_barcode,bad_count FROM balance_account_detail WHERE bad_ba_id=117 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 增加AB库记录
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702002,0,1,3855,117,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3855 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6920202888883 数量:2 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920202888883' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6954767453286 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6954767453286' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6908512208720 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6908512208720' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:8855790000141 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '8855790000141' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6959734500611 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6959734500611' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6971187580033 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580033' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6971187580040 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580040' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6922307205091 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205091' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6920908402017 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402017' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6920908402024 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402024' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6912999330027 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330027' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6912999330003 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330003' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702002 条码:6901035618601 数量:2 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702006 条码:6901035618601 数量:10 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702007 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702007 条码:2000102550562 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '2000102550562' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702007 条码:6923644266318 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6923644266318' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702030 条码:6902083880781 数量:4 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6902083880781' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702030 条码:6948195814245 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6948195814245' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702030 条码:6955748500029 数量:2 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 增加AB库记录
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702030,0,2,3845,117,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3845 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702030 条码:6922307205527 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205527' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702030 条码:6925303714840 数量:4 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6925303714840' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702103 条码:6944312690372 数量:5 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312690372' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702103 条码:6944312683626 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312683626' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 结算每商户促销产品。商户:3702103 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:03:51 --> 增加AB库记录
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702103,0,1,3868,117,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3868 
+DEBUG - 2020-01-11 13:03:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:03:51 --> 结算延期库
+DEBUG - 2020-01-11 13:03:51 --> 结算延期库
+DEBUG - 2020-01-11 13:03:51 --> SQL文:INSERT INTO delay_balance_shop (dbs_dbc_id,dbs_bgs_barcode,dbs_bgs_name,dbs_bs_org_sn,dbs_count,dbs_ba_id,dbs_balance_date) SELECT dbc_id,dbc_bgs_barcode,dbc_bgs_name,bad_bs_org_sn,bad_count,bad_ba_id,bad_balance_date FROM balance_account_detail INNER JOIN delay_balance_conf ON dbc_bgs_barcode=bad_bgs_barcode WHERE bad_ba_id=117
+DEBUG - 2020-01-11 13:03:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bgs_barcode IN (SELECT dbc_bgs_barcode FROM delay_balance_conf)
+DEBUG - 2020-01-11 13:03:51 --> 汇总正常结算金额
+DEBUG - 2020-01-11 13:03:51 --> 汇总正常结算金额:268.6
+DEBUG - 2020-01-11 13:03:51 --> 汇总临期结算金额
+DEBUG - 2020-01-11 13:03:51 --> 汇总临期结算金额:6.45
+DEBUG - 2020-01-11 13:03:51 --> 更新易捷结算总金额
+DEBUG - 2020-01-11 13:03:51 --> 汇总饿百平台结算金额
+DEBUG - 2020-01-11 13:03:51 --> 汇总饿百平台结算金额:0
+DEBUG - 2020-01-11 13:03:51 --> 更新饿百结算金额
+DEBUG - 2020-01-11 13:03:51 --> 饿百结算金额为:0,不需更新！
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bs_org_sn = 3702002 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:03:51 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 117 AND oyc_bs_org_sn = 3702002 
+DEBUG - 2020-01-11 13:03:51 --> 临期商品表格:
+DEBUG - 2020-01-11 13:03:51 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=117  AND oss_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:03:51 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=117  AND dbs_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bs_org_sn = 3702006 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:03:51 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 117 AND oyc_bs_org_sn = 3702006 
+DEBUG - 2020-01-11 13:03:51 --> 临期商品表格:
+DEBUG - 2020-01-11 13:03:51 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=117  AND oss_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:03:51 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=117  AND dbs_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bs_org_sn = 3702007 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:03:51 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 117 AND oyc_bs_org_sn = 3702007 
+DEBUG - 2020-01-11 13:03:51 --> 临期商品表格:
+DEBUG - 2020-01-11 13:03:51 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=117  AND oss_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:03:51 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=117  AND dbs_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:03:51 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bs_org_sn = 3702030 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:03:51 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 117 AND oyc_bs_org_sn = 3702030 
+DEBUG - 2020-01-11 13:03:51 --> 临期商品表格:<tr><td>5</td><td>39193</td><td>1.83</td><td>3</td><td>6923644278588</td><td>蒙牛纯甄酸牛奶200g</td><td>临期</td></tr><tr><td>6</td><td>48055</td><td>0.96</td><td>1</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr><tr><td>7</td><td>48055</td><td>1.00</td><td>0</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr>
+DEBUG - 2020-01-11 13:03:51 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=117  AND oss_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:03:52 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=117  AND dbs_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:03:52 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=117 AND bad_bs_org_sn = 3702103 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:03:52 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 117 AND oyc_bs_org_sn = 3702103 
+DEBUG - 2020-01-11 13:03:52 --> 临期商品表格:
+DEBUG - 2020-01-11 13:03:52 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=117  AND oss_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:03:52 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=117  AND dbs_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:03:52 --> Total execution time: 1.0834
+DEBUG - 2020-01-11 13:03:52 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:03:52 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:03:52 --> Total execution time: 0.0408
+DEBUG - 2020-01-11 13:08:27 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:08:27 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:08:27 --> 清空[2019-12-19]结算记录
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT ba_id FROM balance_account WHERE ba_balance_date='2019-12-19' 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account_collect WHERE bac_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account_error WHERE bae_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_shop_storage WHERE bss_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM delay_balance_shop WHERE dbs_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM onsale_storage_shop WHERE oss_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM onsale_yj_shop WHERE oys_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:UPDATE balance_count_eb SET bce_ba_id=0 WHERE bce_ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account WHERE ba_id=117 
+DEBUG - 2020-01-11 13:08:27 --> 新增结算记录
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO balance_account (ba_balance_date,ba_cpd_remaining_sum,ba_cpd_time,ba_cpd_bill_code,ba_balance_time) SELECT cpd_date,cpd_remaining_sum,cpd_time,cpd_bill_code,'2020-01-11 13:08:27' FROM cash_pool_detail WHERE cpd_bill_code = (SELECT MAX(cpd_bill_code) bill_code FROM cash_pool_detail WHERE cpd_biz_type='支出' AND cpd_date='2019-12-19')
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 获取异常订单及商品
+DEBUG - 2020-01-11 13:08:27 --> 获得异常订单并加入异常库
+DEBUG - 2020-01-11 13:08:27 --> 获得缺少结算价的异常商品
+DEBUG - 2020-01-11 13:08:27 --> 结算饿百各站销量
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO balance_shop_storage (bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,bss_bgs_code,bss_bgs_barcode,bss_count,bss_bgs_name,bss_balance_date,bss_ba_id) SELECT bs_org_sn,bs_sale_sn,eoi_shop_name,bbp_yj_code,sge_barcode, SUM(eod_buy_count) t_eod_buy_count, eod_goods_name,'2019-12-19',118 FROM order_info_eb INNER JOIN order_detail_eb ON eoi_code = eod_eoi_code LEFT JOIN shop_goods_eb ON sge_gid = eod_sku_code LEFT JOIN base_balance_price ON bbp_bar_code = sge_barcode LEFT JOIN base_shop_info ON bs_e_id = eoi_shop_id WHERE eoi_is_delete=0 AND eod_buy_count>0 AND eoi_order_state='已完成' AND eoi_order_create_dt LIKE '2019-12-19%' GROUP BY eoi_shop_id,eod_sku_code 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:08:27 --> 填充结算明细
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO balance_account_detail (bad_bs_org_sn,bad_bs_sale_sn,bad_bs_shop_name,bad_pay_account,bad_bgs_code,bad_bgs_barcode,bad_bbp_settlement_price,bad_count,bad_bgs_name,bad_balance_date,bad_ba_id) SELECT bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,'802320201183858',bss_bgs_code,bss_bgs_barcode,bbp_settlement_price,bss_count,bss_bgs_name,'2019-12-19',118 FROM balance_shop_storage LEFT JOIN base_balance_price ON bbp_bar_code = bss_bgs_barcode WHERE bss_balance_date='2019-12-19' AND bss_ba_id=118 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:08:27 --> 结算临期库
+DEBUG - 2020-01-11 13:08:27 --> SQL文:UPDATE onsale_yj_conf SET oyc_is_close = 1 WHERE oyc_end_date < '2019-12-19' 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT oyc_id,oyc_count,oyc_balance_price,bss_count,oyc_bs_org_sn,oyc_bgs_barcode FROM onsale_yj_conf INNER JOIN balance_shop_storage ON bss_bs_org_sn = oyc_bs_org_sn AND oyc_bgs_barcode = bss_bgs_barcode WHERE oyc_is_close = 0 AND oyc_end_date > '2019-12-19' 
+DEBUG - 2020-01-11 13:08:27 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 5 
+DEBUG - 2020-01-11 13:08:27 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(5,3,'2019-12-19','2020-01-11 13:08:27', 118)
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6923644278588' 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:08:27 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 6 
+DEBUG - 2020-01-11 13:08:27 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(6,1,'2019-12-19','2020-01-11 13:08:27', 118)
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285' 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:08:27 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 10 
+DEBUG - 2020-01-11 13:08:27 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(10,0,'2019-12-19','2020-01-11 13:08:27', 118)
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 修改原价结算数量
+DEBUG - 2020-01-11 13:08:27 --> SQL文:UPDATE balance_account_detail SET bad_count=1 WHERE bad_ba_id=118 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285'
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:08:27 --> 结算促销库
+DEBUG - 2020-01-11 13:08:27 --> 结算AB库
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT bad_id,bad_bs_org_sn,bad_bgs_barcode,bad_count FROM balance_account_detail WHERE bad_ba_id=118 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 增加AB库记录
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702002,0,1,3886,118,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3886 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6920202888883 数量:2 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920202888883' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6954767453286 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6954767453286' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6908512208720 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6908512208720' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:8855790000141 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '8855790000141' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6959734500611 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6959734500611' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6971187580033 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580033' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6971187580040 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580040' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6922307205091 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205091' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6920908402017 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402017' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6920908402024 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402024' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6912999330027 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330027' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6912999330003 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330003' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702002 条码:6901035618601 数量:2 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702006 条码:6901035618601 数量:10 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702007 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702007 条码:2000102550562 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '2000102550562' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702007 条码:6923644266318 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6923644266318' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702030 条码:6902083880781 数量:4 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6902083880781' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702030 条码:6948195814245 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6948195814245' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702030 条码:6955748500029 数量:2 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 增加AB库记录
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702030,0,2,3876,118,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:08:27 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3876 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702030 条码:6922307205527 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205527' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702030 条码:6925303714840 数量:4 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6925303714840' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702103 条码:6944312690372 数量:5 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312690372' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702103 条码:6944312683626 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312683626' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 结算每商户促销产品。商户:3702103 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:08:27 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:08:27 --> 增加AB库记录
+DEBUG - 2020-01-11 13:08:27 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702103,0,1,3899,118,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:08:27 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:27 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:08:28 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3899 
+DEBUG - 2020-01-11 13:08:28 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:08:28 --> 结算延期库
+DEBUG - 2020-01-11 13:08:28 --> 结算延期库
+DEBUG - 2020-01-11 13:08:28 --> SQL文:INSERT INTO delay_balance_shop (dbs_dbc_id,dbs_bgs_barcode,dbs_bgs_name,dbs_bs_org_sn,dbs_count,dbs_ba_id,dbs_balance_date) SELECT dbc_id,dbc_bgs_barcode,dbc_bgs_name,bad_bs_org_sn,bad_count,bad_ba_id,bad_balance_date FROM balance_account_detail INNER JOIN delay_balance_conf ON dbc_bgs_barcode=bad_bgs_barcode WHERE bad_ba_id=118
+DEBUG - 2020-01-11 13:08:28 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bgs_barcode IN (SELECT dbc_bgs_barcode FROM delay_balance_conf)
+DEBUG - 2020-01-11 13:08:28 --> 汇总正常结算金额
+DEBUG - 2020-01-11 13:08:28 --> 汇总正常结算金额:268.6
+DEBUG - 2020-01-11 13:08:28 --> 汇总临期结算金额
+DEBUG - 2020-01-11 13:08:28 --> 汇总临期结算金额:6.45
+DEBUG - 2020-01-11 13:08:28 --> 更新易捷结算总金额
+DEBUG - 2020-01-11 13:08:28 --> 汇总饿百平台结算金额
+DEBUG - 2020-01-11 13:08:28 --> 汇总饿百平台结算金额:0
+DEBUG - 2020-01-11 13:08:28 --> 更新饿百结算金额
+DEBUG - 2020-01-11 13:08:28 --> 饿百结算金额为:0,不需更新！
+DEBUG - 2020-01-11 13:08:28 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bs_org_sn = 3702002 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:08:28 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 118 AND oyc_bs_org_sn = 3702002 
+DEBUG - 2020-01-11 13:08:28 --> 临期商品表格:
+DEBUG - 2020-01-11 13:08:28 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=118  AND oss_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:08:28 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=118  AND dbs_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:08:28 --> 易捷便利店（石化第78加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:08:30 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:08:30 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bs_org_sn = 3702006 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:08:30 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 118 AND oyc_bs_org_sn = 3702006 
+DEBUG - 2020-01-11 13:08:30 --> 临期商品表格:
+DEBUG - 2020-01-11 13:08:30 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=118  AND oss_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:08:30 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=118  AND dbs_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:08:30 --> 易捷便利店（石化第98加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:08:30 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:08:32 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:08:32 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bs_org_sn = 3702007 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:08:32 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 118 AND oyc_bs_org_sn = 3702007 
+DEBUG - 2020-01-11 13:08:32 --> 临期商品表格:
+DEBUG - 2020-01-11 13:08:32 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=118  AND oss_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:08:32 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=118  AND dbs_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:08:32 --> 易捷便利店（20站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:08:32 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:08:34 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:08:34 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bs_org_sn = 3702030 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:08:34 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 118 AND oyc_bs_org_sn = 3702030 
+DEBUG - 2020-01-11 13:08:34 --> 临期商品表格:<tr><td>5</td><td>39193</td><td>1.83</td><td>3</td><td>6923644278588</td><td>蒙牛纯甄酸牛奶200g</td><td>临期</td></tr><tr><td>6</td><td>48055</td><td>0.96</td><td>1</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr><tr><td>7</td><td>48055</td><td>1.00</td><td>0</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr>
+DEBUG - 2020-01-11 13:08:34 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=118  AND oss_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:08:34 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=118  AND dbs_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:08:34 --> 易捷便利店（石化第3加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:08:34 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:08:36 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:08:36 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=118 AND bad_bs_org_sn = 3702103 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:08:36 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 118 AND oyc_bs_org_sn = 3702103 
+DEBUG - 2020-01-11 13:08:36 --> 临期商品表格:
+DEBUG - 2020-01-11 13:08:36 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=118  AND oss_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:08:36 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=118  AND dbs_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:08:36 --> 易捷便利店（石化第56加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:08:36 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:08:39 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:08:39 --> Total execution time: 11.9234
+DEBUG - 2020-01-11 13:08:39 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:08:39 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:08:39 --> Total execution time: 0.0530
+DEBUG - 2020-01-11 13:12:01 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:12:01 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:12:01 --> Total execution time: 0.0327
+DEBUG - 2020-01-11 13:12:02 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:12:02 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:12:02 --> Total execution time: 0.0260
+DEBUG - 2020-01-11 13:12:02 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:12:02 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:12:02 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:12:02 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:12:02 --> Total execution time: 0.0530
+DEBUG - 2020-01-11 13:12:02 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:12:02 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:12:02 --> Total execution time: 0.0482
+DEBUG - 2020-01-11 13:12:07 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:12:07 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:12:07 --> 清空[2019-12-19]结算记录
+DEBUG - 2020-01-11 13:12:07 --> SQL文:SELECT ba_id FROM balance_account WHERE ba_balance_date='2019-12-19' 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM balance_account_collect WHERE bac_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM balance_account_error WHERE bae_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM balance_shop_storage WHERE bss_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM delay_balance_shop WHERE dbs_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM onsale_storage_shop WHERE oss_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM onsale_yj_shop WHERE oys_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:UPDATE balance_count_eb SET bce_ba_id=0 WHERE bce_ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM balance_account WHERE ba_id=118 
+DEBUG - 2020-01-11 13:12:07 --> 新增结算记录
+DEBUG - 2020-01-11 13:12:07 --> SQL文:INSERT INTO balance_account (ba_balance_date,ba_cpd_remaining_sum,ba_cpd_time,ba_cpd_bill_code,ba_balance_time) SELECT cpd_date,cpd_remaining_sum,cpd_time,cpd_bill_code,'2020-01-11 13:12:07' FROM cash_pool_detail WHERE cpd_bill_code = (SELECT MAX(cpd_bill_code) bill_code FROM cash_pool_detail WHERE cpd_biz_type='支出' AND cpd_date='2019-12-19')
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:07 --> 获取异常订单及商品
+DEBUG - 2020-01-11 13:12:07 --> 获得异常订单并加入异常库
+DEBUG - 2020-01-11 13:12:07 --> 获得缺少结算价的异常商品
+DEBUG - 2020-01-11 13:12:07 --> 结算饿百各站销量
+DEBUG - 2020-01-11 13:12:07 --> SQL文:INSERT INTO balance_shop_storage (bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,bss_bgs_code,bss_bgs_barcode,bss_count,bss_bgs_name,bss_balance_date,bss_ba_id) SELECT bs_org_sn,bs_sale_sn,eoi_shop_name,bbp_yj_code,sge_barcode, SUM(eod_buy_count) t_eod_buy_count, eod_goods_name,'2019-12-19',119 FROM order_info_eb INNER JOIN order_detail_eb ON eoi_code = eod_eoi_code LEFT JOIN shop_goods_eb ON sge_gid = eod_sku_code LEFT JOIN base_balance_price ON bbp_bar_code = sge_barcode LEFT JOIN base_shop_info ON bs_e_id = eoi_shop_id WHERE eoi_is_delete=0 AND eod_buy_count>0 AND eoi_order_state='已完成' AND eoi_order_create_dt LIKE '2019-12-19%' GROUP BY eoi_shop_id,eod_sku_code 
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:12:07 --> 填充结算明细
+DEBUG - 2020-01-11 13:12:07 --> SQL文:INSERT INTO balance_account_detail (bad_bs_org_sn,bad_bs_sale_sn,bad_bs_shop_name,bad_pay_account,bad_bgs_code,bad_bgs_barcode,bad_bbp_settlement_price,bad_count,bad_bgs_name,bad_balance_date,bad_ba_id) SELECT bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,'802320201183858',bss_bgs_code,bss_bgs_barcode,bbp_settlement_price,bss_count,bss_bgs_name,'2019-12-19',119 FROM balance_shop_storage LEFT JOIN base_balance_price ON bbp_bar_code = bss_bgs_barcode WHERE bss_balance_date='2019-12-19' AND bss_ba_id=119 
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:12:07 --> 结算临期库
+DEBUG - 2020-01-11 13:12:07 --> SQL文:UPDATE onsale_yj_conf SET oyc_is_close = 1 WHERE oyc_end_date < '2019-12-19' 
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:12:07 --> SQL文:SELECT oyc_id,oyc_count,oyc_balance_price,bss_count,oyc_bs_org_sn,oyc_bgs_barcode FROM onsale_yj_conf INNER JOIN balance_shop_storage ON bss_bs_org_sn = oyc_bs_org_sn AND oyc_bgs_barcode = bss_bgs_barcode WHERE oyc_is_close = 0 AND oyc_end_date > '2019-12-19' 
+DEBUG - 2020-01-11 13:12:07 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:12:07 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 5 
+DEBUG - 2020-01-11 13:12:07 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:12:07 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(5,3,'2019-12-19','2020-01-11 13:12:07', 119)
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:07 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6923644278588' 
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:12:07 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:12:07 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 6 
+DEBUG - 2020-01-11 13:12:07 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:12:07 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(6,1,'2019-12-19','2020-01-11 13:12:07', 119)
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:07 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:12:07 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285' 
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:12:07 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:12:07 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 10 
+DEBUG - 2020-01-11 13:12:07 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:12:07 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(10,0,'2019-12-19','2020-01-11 13:12:07', 119)
+DEBUG - 2020-01-11 13:12:07 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:07 --> 修改原价结算数量
+DEBUG - 2020-01-11 13:12:07 --> SQL文:UPDATE balance_account_detail SET bad_count=1 WHERE bad_ba_id=119 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285'
+DEBUG - 2020-01-11 13:12:08 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:12:08 --> 结算促销库
+DEBUG - 2020-01-11 13:12:08 --> 结算AB库
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT bad_id,bad_bs_org_sn,bad_bgs_barcode,bad_count FROM balance_account_detail WHERE bad_ba_id=119 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 增加AB库记录
+DEBUG - 2020-01-11 13:12:08 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702002,0,1,3917,119,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:12:08 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:08 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:12:08 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3917 
+DEBUG - 2020-01-11 13:12:08 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6920202888883 数量:2 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920202888883' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6954767453286 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6954767453286' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6908512208720 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6908512208720' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:8855790000141 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '8855790000141' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6959734500611 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6959734500611' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6971187580033 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580033' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6971187580040 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580040' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6922307205091 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205091' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6920908402017 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402017' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6920908402024 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402024' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6912999330027 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330027' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6912999330003 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330003' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702002 条码:6901035618601 数量:2 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702006 条码:6901035618601 数量:10 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702007 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702007 条码:2000102550562 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '2000102550562' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702007 条码:6923644266318 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6923644266318' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702030 条码:6902083880781 数量:4 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6902083880781' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702030 条码:6948195814245 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6948195814245' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702030 条码:6955748500029 数量:2 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 增加AB库记录
+DEBUG - 2020-01-11 13:12:08 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702030,0,2,3907,119,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:12:08 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:08 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:12:08 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3907 
+DEBUG - 2020-01-11 13:12:08 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702030 条码:6922307205527 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205527' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702030 条码:6925303714840 数量:4 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6925303714840' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702103 条码:6944312690372 数量:5 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312690372' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702103 条码:6944312683626 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312683626' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 结算每商户促销产品。商户:3702103 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:12:08 --> 增加AB库记录
+DEBUG - 2020-01-11 13:12:08 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702103,0,1,3930,119,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:12:08 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:08 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:12:08 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3930 
+DEBUG - 2020-01-11 13:12:08 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:12:08 --> 结算延期库
+DEBUG - 2020-01-11 13:12:08 --> 结算延期库
+DEBUG - 2020-01-11 13:12:08 --> SQL文:INSERT INTO delay_balance_shop (dbs_dbc_id,dbs_bgs_barcode,dbs_bgs_name,dbs_bs_org_sn,dbs_count,dbs_ba_id,dbs_balance_date) SELECT dbc_id,dbc_bgs_barcode,dbc_bgs_name,bad_bs_org_sn,bad_count,bad_ba_id,bad_balance_date FROM balance_account_detail INNER JOIN delay_balance_conf ON dbc_bgs_barcode=bad_bgs_barcode WHERE bad_ba_id=119
+DEBUG - 2020-01-11 13:12:08 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bgs_barcode IN (SELECT dbc_bgs_barcode FROM delay_balance_conf)
+DEBUG - 2020-01-11 13:12:08 --> 汇总正常结算金额
+DEBUG - 2020-01-11 13:12:08 --> 汇总正常结算金额:268.6
+DEBUG - 2020-01-11 13:12:08 --> 汇总临期结算金额
+DEBUG - 2020-01-11 13:12:08 --> 汇总临期结算金额:6.45
+DEBUG - 2020-01-11 13:12:08 --> 更新易捷结算总金额
+DEBUG - 2020-01-11 13:12:08 --> 汇总饿百平台结算金额
+DEBUG - 2020-01-11 13:12:08 --> 汇总饿百平台结算金额:0
+DEBUG - 2020-01-11 13:12:08 --> 更新饿百结算金额
+DEBUG - 2020-01-11 13:12:08 --> 饿百结算金额为:0,不需更新！
+DEBUG - 2020-01-11 13:12:08 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bs_org_sn = 3702002 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:12:08 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 119 AND oyc_bs_org_sn = 3702002 
+DEBUG - 2020-01-11 13:12:08 --> 临期商品表格:
+DEBUG - 2020-01-11 13:12:08 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=119  AND oss_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:12:08 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=119  AND dbs_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:12:08 --> 易捷便利店（石化第78加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:12:10 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:12:10 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bs_org_sn = 3702006 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:12:10 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 119 AND oyc_bs_org_sn = 3702006 
+DEBUG - 2020-01-11 13:12:10 --> 临期商品表格:
+DEBUG - 2020-01-11 13:12:10 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=119  AND oss_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:12:10 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=119  AND dbs_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:12:10 --> 易捷便利店（石化第98加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:12:10 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:12:12 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:12:12 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bs_org_sn = 3702007 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:12:12 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 119 AND oyc_bs_org_sn = 3702007 
+DEBUG - 2020-01-11 13:12:12 --> 临期商品表格:
+DEBUG - 2020-01-11 13:12:12 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=119  AND oss_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:12:12 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=119  AND dbs_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:12:12 --> 易捷便利店（20站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:12:12 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:12:14 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:12:14 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bs_org_sn = 3702030 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:12:14 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 119 AND oyc_bs_org_sn = 3702030 
+DEBUG - 2020-01-11 13:12:14 --> 临期商品表格:<tr><td>5</td><td>39193</td><td>1.83</td><td>3</td><td>6923644278588</td><td>蒙牛纯甄酸牛奶200g</td><td>临期</td></tr><tr><td>6</td><td>48055</td><td>0.96</td><td>1</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr><tr><td>7</td><td>48055</td><td>1.00</td><td>0</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr>
+DEBUG - 2020-01-11 13:12:14 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=119  AND oss_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:12:14 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=119  AND dbs_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:12:14 --> 易捷便利店（石化第3加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:12:14 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:12:16 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:12:16 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=119 AND bad_bs_org_sn = 3702103 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:12:16 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 119 AND oyc_bs_org_sn = 3702103 
+DEBUG - 2020-01-11 13:12:16 --> 临期商品表格:
+DEBUG - 2020-01-11 13:12:16 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=119  AND oss_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:12:16 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=119  AND dbs_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:12:16 --> 易捷便利店（石化第56加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:12:16 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:12:19 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:12:19 --> Total execution time: 11.5873
+DEBUG - 2020-01-11 13:12:19 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:12:19 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:12:19 --> Total execution time: 0.0487
+DEBUG - 2020-01-11 13:15:42 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:15:42 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:15:42 --> Total execution time: 0.0239
+DEBUG - 2020-01-11 13:15:43 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:15:43 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:15:43 --> Total execution time: 0.0322
+DEBUG - 2020-01-11 13:15:44 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:15:44 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:15:44 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:15:44 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:15:44 --> Total execution time: 0.0542
+DEBUG - 2020-01-11 13:15:44 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:15:44 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:15:44 --> Total execution time: 0.0499
+DEBUG - 2020-01-11 13:15:50 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:15:50 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:15:50 --> 清空[2019-12-19]结算记录
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT ba_id FROM balance_account WHERE ba_balance_date='2019-12-19' 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_account_collect WHERE bac_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_account_error WHERE bae_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_shop_storage WHERE bss_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM delay_balance_shop WHERE dbs_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM onsale_storage_shop WHERE oss_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM onsale_yj_shop WHERE oys_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:UPDATE balance_count_eb SET bce_ba_id=0 WHERE bce_ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_account WHERE ba_id=119 
+DEBUG - 2020-01-11 13:15:50 --> 新增结算记录
+DEBUG - 2020-01-11 13:15:50 --> SQL文:INSERT INTO balance_account (ba_balance_date,ba_cpd_remaining_sum,ba_cpd_time,ba_cpd_bill_code,ba_balance_time) SELECT cpd_date,cpd_remaining_sum,cpd_time,cpd_bill_code,'2020-01-11 13:15:50' FROM cash_pool_detail WHERE cpd_bill_code = (SELECT MAX(cpd_bill_code) bill_code FROM cash_pool_detail WHERE cpd_biz_type='支出' AND cpd_date='2019-12-19')
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:50 --> 获取异常订单及商品
+DEBUG - 2020-01-11 13:15:50 --> 获得异常订单并加入异常库
+DEBUG - 2020-01-11 13:15:50 --> 获得缺少结算价的异常商品
+DEBUG - 2020-01-11 13:15:50 --> 结算饿百各站销量
+DEBUG - 2020-01-11 13:15:50 --> SQL文:INSERT INTO balance_shop_storage (bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,bss_bgs_code,bss_bgs_barcode,bss_count,bss_bgs_name,bss_balance_date,bss_ba_id) SELECT bs_org_sn,bs_sale_sn,eoi_shop_name,bbp_yj_code,sge_barcode, SUM(eod_buy_count) t_eod_buy_count, eod_goods_name,'2019-12-19',120 FROM order_info_eb INNER JOIN order_detail_eb ON eoi_code = eod_eoi_code LEFT JOIN shop_goods_eb ON sge_gid = eod_sku_code LEFT JOIN base_balance_price ON bbp_bar_code = sge_barcode LEFT JOIN base_shop_info ON bs_e_id = eoi_shop_id WHERE eoi_is_delete=0 AND eod_buy_count>0 AND eoi_order_state='已完成' AND eoi_order_create_dt LIKE '2019-12-19%' GROUP BY eoi_shop_id,eod_sku_code 
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:15:50 --> 填充结算明细
+DEBUG - 2020-01-11 13:15:50 --> SQL文:INSERT INTO balance_account_detail (bad_bs_org_sn,bad_bs_sale_sn,bad_bs_shop_name,bad_pay_account,bad_bgs_code,bad_bgs_barcode,bad_bbp_settlement_price,bad_count,bad_bgs_name,bad_balance_date,bad_ba_id) SELECT bss_bs_org_sn,bss_bs_sale_sn,bss_bs_shop_name,'802320201183858',bss_bgs_code,bss_bgs_barcode,bbp_settlement_price,bss_count,bss_bgs_name,'2019-12-19',120 FROM balance_shop_storage LEFT JOIN base_balance_price ON bbp_bar_code = bss_bgs_barcode WHERE bss_balance_date='2019-12-19' AND bss_ba_id=120 
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:27
+DEBUG - 2020-01-11 13:15:50 --> 结算临期库
+DEBUG - 2020-01-11 13:15:50 --> SQL文:UPDATE onsale_yj_conf SET oyc_is_close = 1 WHERE oyc_end_date < '2019-12-19' 
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT oyc_id,oyc_count,oyc_balance_price,bss_count,oyc_bs_org_sn,oyc_bgs_barcode FROM onsale_yj_conf INNER JOIN balance_shop_storage ON bss_bs_org_sn = oyc_bs_org_sn AND oyc_bgs_barcode = bss_bgs_barcode WHERE oyc_is_close = 0 AND oyc_end_date > '2019-12-19' 
+DEBUG - 2020-01-11 13:15:50 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 5 
+DEBUG - 2020-01-11 13:15:50 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:15:50 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(5,3,'2019-12-19','2020-01-11 13:15:50', 120)
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:50 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6923644278588' 
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:15:50 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 6 
+DEBUG - 2020-01-11 13:15:50 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:15:50 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(6,1,'2019-12-19','2020-01-11 13:15:50', 120)
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:50 --> 删除原价结算明细
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285' 
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:15:50 --> 处理临期促销历史
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT SUM(oys_count) oys_c FROM onsale_yj_shop WHERE oys_oyc_id = 10 
+DEBUG - 2020-01-11 13:15:50 --> 追加临期促销历史
+DEBUG - 2020-01-11 13:15:50 --> SQL文:INSERT INTO onsale_yj_shop (oys_oyc_id,oys_count,oys_sale_date,oys_update_time,oys_ba_id) VALUES(10,0,'2019-12-19','2020-01-11 13:15:50', 120)
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:50 --> 修改原价结算数量
+DEBUG - 2020-01-11 13:15:50 --> SQL文:UPDATE balance_account_detail SET bad_count=1 WHERE bad_ba_id=120 AND bad_bs_org_sn=3702030 AND bad_bgs_barcode='6935284415285'
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:0
+DEBUG - 2020-01-11 13:15:50 --> 结算促销库
+DEBUG - 2020-01-11 13:15:50 --> 结算AB库
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT bad_id,bad_bs_org_sn,bad_bgs_barcode,bad_count FROM balance_account_detail WHERE bad_ba_id=120 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 增加AB库记录
+DEBUG - 2020-01-11 13:15:50 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702002,0,1,3948,120,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:50 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:15:50 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3948 
+DEBUG - 2020-01-11 13:15:50 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6920202888883 数量:2 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920202888883' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6954767453286 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6954767453286' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6908512208720 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6908512208720' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:8855790000141 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '8855790000141' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6959734500611 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6959734500611' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6971187580033 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580033' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6971187580040 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580040' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6922307205091 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205091' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6920908402017 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402017' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6920908402024 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6920908402024' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6912999330027 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330027' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6912999330003 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6912999330003' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702002 条码:6901035618601 数量:2 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702006 条码:6901035618601 数量:10 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6901035618601' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702007 条码:6971187580026 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6971187580026' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702007 条码:2000102550562 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '2000102550562' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702007 条码:6923644266318 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6923644266318' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702030 条码:6902083880781 数量:4 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6902083880781' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702030 条码:6948195814245 数量:1 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6948195814245' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 结算每商户促销产品。商户:3702030 条码:6955748500029 数量:2 
+DEBUG - 2020-01-11 13:15:50 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:50 --> 增加AB库记录
+DEBUG - 2020-01-11 13:15:51 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702030,0,2,3938,120,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:15:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:51 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:15:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3938 
+DEBUG - 2020-01-11 13:15:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:51 --> 结算每商户促销产品。商户:3702030 条码:6922307205527 数量:1 
+DEBUG - 2020-01-11 13:15:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6922307205527' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:51 --> 结算每商户促销产品。商户:3702030 条码:6925303714840 数量:4 
+DEBUG - 2020-01-11 13:15:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6925303714840' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:51 --> 结算每商户促销产品。商户:3702103 条码:6944312690372 数量:5 
+DEBUG - 2020-01-11 13:15:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312690372' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:51 --> 结算每商户促销产品。商户:3702103 条码:6944312683626 数量:1 
+DEBUG - 2020-01-11 13:15:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6944312683626' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:51 --> 结算每商户促销产品。商户:3702103 条码:6955748500029 数量:1 
+DEBUG - 2020-01-11 13:15:51 --> SQL文:SELECT osc_id,osc_bgs_barcode,osc_trigger_count,osc_free_count,SUM(oss_trigger_count) trigger_count,SUM(oss_free_count) free_count FROM onsale_storage_conf LEFT JOIN onsale_storage_shop ON oss_osc_id=osc_id WHERE osc_bgs_barcode = '6955748500029' GROUP BY oss_bgs_barcode ORDER BY osc_trigger_count ASC
+DEBUG - 2020-01-11 13:15:51 --> 增加AB库记录
+DEBUG - 2020-01-11 13:15:51 --> SQL文:INSERT INTO onsale_storage_shop (oss_osc_id,oss_bgs_barcode,oss_bgs_name,oss_bs_org_sn,oss_trigger_count,oss_free_count,oss_bad_id,oss_ba_id,oss_balance_time) SELECT 1,'6955748500029',osc_bgs_name,3702103,0,1,3961,120,'2019-12-19' FROM onsale_storage_conf WHERE osc_id=1 
+DEBUG - 2020-01-11 13:15:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:51 --> 删除结算详情信息
+DEBUG - 2020-01-11 13:15:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_id=3961 
+DEBUG - 2020-01-11 13:15:51 --> 受影响记录数:1
+DEBUG - 2020-01-11 13:15:51 --> 结算延期库
+DEBUG - 2020-01-11 13:15:51 --> 结算延期库
+DEBUG - 2020-01-11 13:15:51 --> SQL文:INSERT INTO delay_balance_shop (dbs_dbc_id,dbs_bgs_barcode,dbs_bgs_name,dbs_bs_org_sn,dbs_count,dbs_ba_id,dbs_balance_date) SELECT dbc_id,dbc_bgs_barcode,dbc_bgs_name,bad_bs_org_sn,bad_count,bad_ba_id,bad_balance_date FROM balance_account_detail INNER JOIN delay_balance_conf ON dbc_bgs_barcode=bad_bgs_barcode WHERE bad_ba_id=120
+DEBUG - 2020-01-11 13:15:51 --> SQL文:DELETE FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bgs_barcode IN (SELECT dbc_bgs_barcode FROM delay_balance_conf)
+DEBUG - 2020-01-11 13:15:51 --> 汇总正常结算金额
+DEBUG - 2020-01-11 13:15:51 --> 汇总正常结算金额:268.6
+DEBUG - 2020-01-11 13:15:51 --> 汇总临期结算金额
+DEBUG - 2020-01-11 13:15:51 --> 汇总临期结算金额:6.45
+DEBUG - 2020-01-11 13:15:51 --> 更新易捷结算总金额
+DEBUG - 2020-01-11 13:15:51 --> 汇总饿百平台结算金额
+DEBUG - 2020-01-11 13:15:51 --> 汇总饿百平台结算金额:0
+DEBUG - 2020-01-11 13:15:51 --> 更新饿百结算金额
+DEBUG - 2020-01-11 13:15:51 --> 饿百结算金额为:0,不需更新！
+DEBUG - 2020-01-11 13:15:51 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bs_org_sn = 3702002 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:15:51 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 120 AND oyc_bs_org_sn = 3702002 
+DEBUG - 2020-01-11 13:15:51 --> 临期商品表格:
+DEBUG - 2020-01-11 13:15:51 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=120  AND oss_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:15:51 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=120  AND dbs_bs_org_sn=3702002
+DEBUG - 2020-01-11 13:15:51 --> 易捷便利店（石化第78加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:15:53 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:15:53 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bs_org_sn = 3702006 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:15:53 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 120 AND oyc_bs_org_sn = 3702006 
+DEBUG - 2020-01-11 13:15:53 --> 临期商品表格:
+DEBUG - 2020-01-11 13:15:53 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=120  AND oss_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:15:53 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=120  AND dbs_bs_org_sn=3702006
+DEBUG - 2020-01-11 13:15:53 --> 易捷便利店（石化第98加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:15:53 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:15:55 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:15:55 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bs_org_sn = 3702007 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:15:55 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 120 AND oyc_bs_org_sn = 3702007 
+DEBUG - 2020-01-11 13:15:55 --> 临期商品表格:
+DEBUG - 2020-01-11 13:15:55 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=120  AND oss_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:15:55 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=120  AND dbs_bs_org_sn=3702007
+DEBUG - 2020-01-11 13:15:55 --> 易捷便利店（20站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:15:55 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:15:57 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:15:57 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bs_org_sn = 3702030 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:15:57 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 120 AND oyc_bs_org_sn = 3702030 
+DEBUG - 2020-01-11 13:15:57 --> 临期商品表格:<tr><td>5</td><td>39193</td><td>1.83</td><td>3</td><td>6923644278588</td><td>蒙牛纯甄酸牛奶200g</td><td>临期</td></tr><tr><td>6</td><td>48055</td><td>0.96</td><td>1</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr><tr><td>7</td><td>48055</td><td>1.00</td><td>0</td><td>6935284415285</td><td>卫龙火药辣条40g</td><td>临期</td></tr>
+DEBUG - 2020-01-11 13:15:57 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=120  AND oss_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:15:57 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=120  AND dbs_bs_org_sn=3702030
+DEBUG - 2020-01-11 13:15:57 --> 易捷便利店（石化第3加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:15:57 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:15:59 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:15:59 --> SQL文:SELECT bad_pay_account,bad_bgs_code,bad_bbp_settlement_price,bad_count,bad_bgs_barcode,bad_bgs_name FROM balance_account_detail WHERE bad_ba_id=120 AND bad_bs_org_sn = 3702103 ORDER BY bad_bs_org_sn 
+DEBUG - 2020-01-11 13:15:59 --> 获取临期商品sql文:SELECT oyc_bgs_code,oyc_balance_price,oys_count,oyc_bgs_barcode,oyc_goods_name FROM onsale_yj_shop LEFT JOIN onsale_yj_conf ON oyc_id = oys_oyc_id LEFT JOIN base_shop_info ON bs_org_sn = oyc_bs_org_sn WHERE oys_ba_id = 120 AND oyc_bs_org_sn = 3702103 
+DEBUG - 2020-01-11 13:15:59 --> 临期商品表格:
+DEBUG - 2020-01-11 13:15:59 --> getABList SQL文:SELECT oss_bgs_name,oss_bgs_barcode,bs_shop_sn,oss_trigger_count,oss_free_count FROM onsale_storage_shop LEFT JOIN base_shop_info ON bs_org_sn = oss_bs_org_sn WHERE oss_ba_id=120  AND oss_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:15:59 --> getDelayList SQL文:SELECT dbs_bgs_name,dbs_bgs_barcode,bs_shop_sn,dbs_count FROM delay_balance_shop LEFT JOIN base_shop_info ON bs_org_sn = dbs_bs_org_sn WHERE dbs_ba_id=120  AND dbs_bs_org_sn=3702103
+DEBUG - 2020-01-11 13:15:59 --> 易捷便利店（石化第56加油站店）2019-12-19结算表
+DEBUG - 2020-01-11 13:15:59 --> Email class already loaded. Second attempt ignored.
+DEBUG - 2020-01-11 13:16:01 --> <pre>
+
+</pre>
+DEBUG - 2020-01-11 13:16:01 --> Total execution time: 11.5774
+DEBUG - 2020-01-11 13:16:01 --> UTF-8 Support Enabled
+DEBUG - 2020-01-11 13:16:01 --> Global POST, GET and COOKIE data sanitized
+DEBUG - 2020-01-11 13:16:01 --> Total execution time: 0.0371

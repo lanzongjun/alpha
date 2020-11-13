@@ -1,0 +1,120 @@
+<html>
+    <head>
+        <title>t_var_title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            #backgound_body {
+                background-color:#FFFFFF;
+                color:#000000;
+                border-style:solid;
+                border-color:#000000;
+            }
+            #backgound_body .bal_table {
+                font-size:1em;
+                text-align:center;
+                border:1px solid;
+                border-collapse:collapse;
+            }
+            #backgound_body .bal_table th {
+                font-weight:bold; 
+                background-color:#CCCCCC;
+            }
+            #backgound_body .bal_table td,th {
+                border:1px solid;
+                padding:5px;
+                white-space:nowrap;
+            }
+        </style>
+    </head>
+    <body>
+        <style>
+            #backgound_body {
+                background-color:#FFFFFF;
+                color:#000000;
+                border-style:solid;
+                border-color:#000000;
+            }
+            #backgound_body .bal_table {
+                font-size:1em;
+                text-align:center;
+                border:1px solid;
+                border-collapse:collapse;
+            }
+            #backgound_body .bal_table th {
+                font-weight:bold; 
+                background-color:#CCCCCC;
+            }
+            #backgound_body .bal_table td,th {
+                border:1px solid;
+                padding:5px;
+                white-space:nowrap;
+            }
+        </style>
+        <div id="backgound_body">
+            <table class="bal_table">
+                <thead>
+                    <tr>
+                        <th colspan=4>付款账号:t_pay_account</th>
+                        <th colspan=2>t_shop_name</th>
+                        <th>t_bal_date</th>
+                    </tr>
+                    <tr>
+                        <th style="width:10px;">No.</th>
+                        <th style="width:70px;">商品编码</th>
+                        <th style='width:40px;'>单价</th>
+                        <th style='width:40px;'>数量</th>
+                        <th style='width:100px;'>商品条形码</th>
+                        <th style='width:200px;'>商品名称</th>
+                        <th style='width:100px;'>备注</th>
+                    </tr>                
+                </thead>
+                <tbody>
+                    t_var_balance_content
+                    <tr>
+                        <th colspan=4>付款账号:t_pay_account</th>
+                        <th colspan=2>t_shop_name</th>
+                        <th>t_bal_date</th>
+                    </tr>
+                </tbody>
+            </table>
+            <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+            <!--自供货商品-->
+            <table class="bal_table">
+                <thead>
+                    <tr>
+                        <th colspan=5>免结算-自供货商品</th>
+                    </tr>
+                    <tr>
+                        <th style="width:10px;">No.</th>
+                        <th style="width:219px">商品名称</th>
+                        <th style='width:100px;'>结算销量</th>
+                        <th style='width:100px;'>免结销量</th>
+                        <th style='width:100px;'>商品条形码</th>
+                    </tr>                
+                </thead>
+                <tbody>
+                    t_var_bal_ab
+                </tbody>
+            </table>
+            <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+            <!--延期库商品-->
+            <table class="bal_table">
+                <thead>
+                    <tr>
+                        <th colspan=4>免结算-延期商品</th>
+                    </tr>
+                    <tr>
+                        <th style="width:10px;">No.</th>
+                        <th style="width:230px">商品名称</th>
+                        <th style="width:150px;">销售</th>
+                        <th style="width:150px;">商品条形码</th>
+                    </tr>                
+                </thead>
+                <tbody>
+                    t_var_bal_delay
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>
