@@ -15,8 +15,8 @@ class AdMTOrderInfoM extends CI_Model {
     
     var $_tbn_order_info = 'order_info';
     var $_tbn_order_detail = 'order_detail';
-    var $_tbn_order_refund = 'apply_order_refund';
-    var $_tbn_order_refund_detail = 'apply_order_refund_detail';
+    var $_tbn_order_refund = 'order_refund';
+    var $_tbn_order_refund_detail = 'order_refund_detail';
     
     function __construct() {
         parent::__construct();        

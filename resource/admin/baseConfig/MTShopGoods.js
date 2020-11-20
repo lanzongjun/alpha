@@ -34,6 +34,8 @@ function opFormat(value, row, index) {
 
 $(function () {
     init();
+    SyncStockInit();
+    SyncSKUInit();
 });
 
 function init() {
@@ -106,7 +108,7 @@ function init() {
         }
     });
     
-    $("#dg").datagrid({
+    $("#mtsg_dg").datagrid({
         rowStyler: function (index, row) {
             if (row.sgm_is_freeze === '1') {
                 return 'background-color:#CCCCCC;color:#333333;';
@@ -117,8 +119,8 @@ function init() {
         url: '../AdShopInfoYJC/getShopMtIdList',
         onLoadSuccess: function () {
             var s_oid = $('#s_shop').combobox('getValue');
-            $('#dg').datagrid({url: '../' + __s_c_name + '/getList/'});
-            $('#dg').datagrid('load', {
+            $('#mtsg_dg').datagrid({url: '../' + __s_c_name + '/getList/'});
+            $('#mtsg_dg').datagrid('load', {
                 oid: s_oid
             });
         }
@@ -130,7 +132,7 @@ function init() {
         var s_barcode = $('#s_barcode').val();
         var s_filter_storage = $('#s_filter_storage').combobox('getValue');
         var s_filter_up = $('#s_filter_up').combobox('getValue');
-        $('#dg').datagrid('load', {
+        $('#mtsg_dg').datagrid('load', {
             oid: s_oid,
             gn: s_gname,
             bc: s_barcode,
@@ -143,16 +145,12 @@ function init() {
         doRefreshStorage();
     });
 
-    $('#btn_update_storage').bind('click', function () {
-        doUpdateStorage();
+    $('#btn_refresh_price').bind('click', function () {
+        doRefreshPrice();
     });
 
-    $('#btn_sync_online').bind('click', function () {
-        doSyncOnline();
-    });
-    
-    $('#btn_sync_sku_list').bind('click', function () {
-        doSyncSkuList();
+    $('#btn_update_storage').bind('click', function () {
+        doUpdateStorage();
     });
     
     $('#btn_freeze_storage').bind('click', function () {
@@ -197,7 +195,7 @@ function doSKULogClear(){
 }
 
 function doFreezeStorage(){
-    var o_row = $("#dg").datagrid('getSelected');
+    var o_row = $("#mtsg_dg").datagrid('getSelected');
     if (!o_row || !o_row.sgm_barcode) {
         $.messager.alert('错误', '请选择一条记录后，在进行此操作', 'error');
         return;
@@ -218,7 +216,7 @@ function doFreezeStorage(){
                         timeout:5000,
                         showType:'slide'
                     });
-                    $("#dg").datagrid('reload');
+                    $("#mtsg_dg").datagrid('reload');
                 }
             });
         }
@@ -226,7 +224,7 @@ function doFreezeStorage(){
 }
 
  function doUnfreezeStorage() {
-    var o_row = $("#dg").datagrid('getSelected');
+    var o_row = $("#mtsg_dg").datagrid('getSelected');
     if (!o_row || !o_row.sgm_barcode) {
         $.messager.alert('错误', '请选择一条记录后，在进行此操作', 'error');
         return;
@@ -247,215 +245,12 @@ function doFreezeStorage(){
                         timeout:5000,
                         showType:'slide'
                     });
-                    $("#dg").datagrid('reload');
+                    $("#mtsg_dg").datagrid('reload');
                 }
             });
         }
     }); 
  }
-
-function doSyncSkuList() {
-    var s_m_id = $('#s_shop').combobox('getValue');
-    if (s_m_id === '') {
-        doSyncSkuListAll();
-    }else{
-        doSyncSkuListSingle();
-    }
-}
-
-function doSyncSkuListSingle(){
-    var s_mid = $('#s_shop').combobox('getValue');
-    var s_sn = $('#s_shop').combobox('getText');
-    if (!s_mid || s_mid === '') {
-        $.messager.alert('错误', '请选择一个店铺后，在进行此操作', 'error');
-        return;
-    }    
-    $.messager.confirm('确认', '即将根据 线上美团店铺商品信息 对[' + s_sn + '] 本地商品信息 进行同步，是否继续此操作？', function (r) {
-        if (r) {
-            win_progress_sl = $.messager.progress({
-                title:'Please waiting',
-                msg:'正在同步[美团-'+s_sn+']本地商品信息......'
-            });
-            $.ajax({
-                url: '../' + __s_c_name + '/syncSkuList',
-                type: "POST",
-                data: {'mid': s_mid},
-                success: function (data) {
-                    $.messager.progress('close');
-                    var o_res = $.parseJSON(data);
-                    $.messager.show({
-                        title:s_sn+' 同步结果',
-                        msg:o_res.msg,
-                        timeout:5000,
-                        showType:'slide'
-                    });
-                    $("#dg").datagrid('reload');
-                }
-            });
-        }
-    });
-}
-
-var __a_sync_shops_sl = [];
-var __i_sync_index_sl = 0;
-
-function doSyncSkuListAll(){
-    var s_msg = '当前未选择任何特定店铺，将根据 线上美团店铺商品信息 对 所有本地商品信息 进行同步，是否继续此操作？';    
-    $.messager.confirm('确认', s_msg, function (r) {
-        if (r) {
-            $.ajax({
-                url: '../' + __s_c_name + '/getAllSyncShop',
-                type: "POST",
-                success: function (data) {                    
-                    __a_sync_shops_sl = $.parseJSON(data);
-                    $("#tab_box").tabs("select", 0);
-                    doSyncMtSkuList();
-                }
-            });
-        }
-    });
-}
-
-var win_progress_sl = null;
-
-function doSyncMtSkuList() {
-    $.messager.progress('close');
-    if (__i_sync_index_sl >= __a_sync_shops_sl.length){return ;}
-    var o_data = __a_sync_shops_sl[__i_sync_index_sl++];
-    var s_mid = o_data.id;
-    var s_shop_name = o_data.text;
-    win_progress_sl = $.messager.progress({
-        title:'Please waiting',
-        msg:'正在同步[美团-'+s_shop_name+']本地商品信息......'
-    });
-    $.ajax({
-        url: '../' + __s_c_name + '/syncSkuList',
-        type: "POST",
-        data: {'mid': s_mid},
-        success: function (data) {
-            var o_res = $.parseJSON(data);
-            $.messager.show({
-                title:'[美团-'+s_shop_name+'] 同步结果',
-                msg:o_res.msg,
-                timeout:5000,
-                showType:'slide'
-            });
-            $("#dg").datagrid('reload');
-            doSyncMtSkuList();
-        }
-    });
-}
-
-function doSyncOnline() {
-    var s_mid = $('#s_shop').combobox('getValue');
-    if (s_mid === '') {
-        doSyncAll();
-    }else{
-        doSyncSingle();
-    }
-}
-
-function doSyncSingle() {
-    var s_mid = $('#s_shop').combobox('getValue');
-    var s_sn = $('#s_shop').combobox('getText');
-    if (!s_mid || s_mid === '') {
-        $.messager.alert('错误', '请选择一个店铺后，在进行此操作', 'error');
-        return;
-    }    
-    $.messager.confirm('确认', '即将根据 站点库存 对[' + s_sn + '] 美团线上库存 进行同步，是否继续此操作？', function (r) {
-        if (r) {
-            win_progress = $.messager.progress({
-                title:'Please waiting',
-                msg:'正在更新[美团-'+s_sn+']线上库存......'
-            });
-            $.ajax({
-                url: '../' + __s_c_name + '/syncOnlineStorage',
-                type: "POST",
-                data: {'mid': s_mid},
-                success: function (data) {
-                    $.messager.progress('close');
-                    var o_res = $.parseJSON(data);
-                    var o_res_update = o_res.update;
-                    var o_res_status_up = o_res.status_up;
-                    var o_res_status_down = o_res.status_down;
-                    var i_suc = o_res_update.suc;
-                    var i_fail = o_res_update.fail;
-                    var i_pages = o_res_update.pages;
-                    var s_shop_name = o_res.shop_name;
-                    $.messager.show({
-                        height:260,
-                        title:s_shop_name+' 更新结果',
-                        msg:'拆分为['+i_pages+']页进行上传<br/>'+'成功:'+i_suc+'页<br/>'+'失败:'+i_fail+'页<br/>'
-                            +'[自动上架]拆分为['+o_res_status_up.pages+'页进行上传<br/>'+'成功:'+o_res_status_up.suc+'页<br/>'+'失败:'+o_res_status_up.fail+'页<br/>'
-                            +'[自动下架]拆分为['+o_res_status_down.pages+'页进行上传<br/>'+'成功:'+o_res_status_down.suc+'页<br/>'+'失败:'+o_res_status_down.fail+'页<br/>',
-                        timeout:5000,
-                        showType:'slide'
-                    });
-                }
-            });
-        }
-    });
-}
-
-var __a_sync_shops = [];
-var __i_sync_index = 0;
-
-function doSyncAll(){
-    var s_msg = '当前未选择任何特定店铺，将根据当前整体库存更新线上所有店铺，是否继续此操作？';    
-    $.messager.confirm('确认', s_msg, function (r) {
-        if (r) {
-            $.ajax({
-                url: '../' + __s_c_name + '/getAllSyncShop',
-                type: "POST",
-                success: function (data) {                    
-                    __a_sync_shops = $.parseJSON(data);
-                    $("#tab_box").tabs("select", 2);
-                    doSyncShop();
-                }
-            });
-        }
-    });
-}
-
-var win_progress = null;
-
-function doSyncShop() {
-    $.messager.progress('close');
-    if (__i_sync_index >= __a_sync_shops.length){return ;}
-    var o_data = __a_sync_shops[__i_sync_index++];
-    var s_mid = o_data.id;
-    var s_shop_name = o_data.text;
-    win_progress = $.messager.progress({
-        title:'Please waiting',
-        msg:'正在更新[美团-'+s_shop_name+']线上库存......'
-    });
-    $.ajax({
-        url: '../' + __s_c_name + '/syncOnlineStorage',
-        type: "POST",
-        data: {'mid': s_mid},
-        success: function (data) {
-            $.messager.progress('close');
-            var o_res = $.parseJSON(data);
-            var o_res_update = o_res.update;
-            var o_res_status_up = o_res.status_up;
-            var o_res_status_down = o_res.status_down;
-            var i_suc = o_res_update.suc;
-            var i_fail = o_res_update.fail;
-            var i_pages = o_res_update.pages;
-            var s_shop_name = o_res.shop_name;
-            $.messager.show({
-                height:260,
-                title:s_shop_name+' 更新结果',
-                msg:'拆分为['+i_pages+']页进行上传<br/>'+'成功:'+i_suc+'页<br/>'+'失败:'+i_fail+'页<br/>'
-                    +'[自动上架]拆分为['+o_res_status_up.pages+'页进行上传<br/>'+'成功:'+o_res_status_up.suc+'页<br/>'+'失败:'+o_res_status_up.fail+'页<br/>'
-                    +'[自动下架]拆分为['+o_res_status_down.pages+'页进行上传<br/>'+'成功:'+o_res_status_down.suc+'页<br/>'+'失败:'+o_res_status_down.fail+'页<br/>',
-                timeout:5000,
-                showType:'slide'
-            });
-            doSyncShop();
-        }
-    });
-}
 
 function doRefreshStorage() {
     var s_mid = $('#s_shop').combobox('getValue');
@@ -481,7 +276,38 @@ function doRefreshStorage() {
                     } else {
                         $.messager.alert('错误', o_response.msg, 'error');
                     }
-                    $("#dg").datagrid("reload");
+                    $("#mtsg_dg").datagrid("reload");
+                }
+            });
+        }
+    });
+}
+
+function doRefreshPrice() {
+    var s_eid = $('#s_shop').combobox('getValue');
+    var s_sn = $('#s_shop').combobox('getText');
+    var s_msg = '';
+    if (s_eid === '') {
+        s_msg = '当前未选择任何特定店铺，将根据站点库存刷新所有美团零售价，是否继续此操作？';
+    } else {
+        s_msg = '即将根据站点库存对[' + s_sn + ']美团零售价进行刷新，是否继续此操作？';
+    }
+    $.messager.confirm('确认', s_msg, function (r) {
+        if (r) {
+            ajaxLoading();
+            $.ajax({
+                url: '../' + __s_c_name + '/refreshPrice',
+                type: "POST",
+                data: {'oid': s_eid},
+                success: function (data) {
+                    ajaxLoadEnd();
+                    var o_response = $.parseJSON(data);
+                    if (o_response.state) {
+                        $.messager.alert('信息', o_response.msg, 'info');
+                    } else {
+                        $.messager.alert('错误', o_response.msg, 'error');
+                    }
+                    $("#mtsg_dg").datagrid("reload");
                 }
             });
         }
@@ -512,7 +338,7 @@ function doUpdateStorage() {
                     } else {
                         $.messager.alert('错误', o_response.msg, 'error');
                     }
-                    $("#dg").datagrid("reload");
+                    $("#mtsg_dg").datagrid("reload");
                 }
             });
         }

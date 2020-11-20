@@ -71,7 +71,7 @@ class AdMTSyncStorageM extends CI_Model {
     
     /**
      * 同步商铺SKU
-     * @param type $s_mt_id
+     * @param $s_mt_id
      * @return string
      */
     public function syncSkuList($s_mt_id){
@@ -178,17 +178,18 @@ class AdMTSyncStorageM extends CI_Model {
     
     /**
      * 同步店铺库存
-     * @param type $s_mt_id
+     * @param string $s_eb_id   门店ID
+     * @param boolean $b_diff   是否只同步差异
      * @return string
      */
-    public function syncOnlineStorage($s_mt_id) {
+    public function syncOnlineStorage($s_mt_id, $b_diff=false) {
         set_time_limit(0);
-        $s_sql = "SELECT sgm_gid,sgm_cid,sgm_barcode,sgm_count,sgm_online,"
+        $s_sql = "SELECT sgm_gid,sgm_cid,sgm_barcode,sgm_count_new sgm_count,sgm_online,"
                 . "bs_m_api_id,bs_shop_name FROM v_shop_goods_mt_unfreeze "
                 . "LEFT JOIN base_shop_info ON bs_m_id=sgm_bs_m_id WHERE sgm_bs_m_id=$s_mt_id";
+        if ($b_diff == true) { $s_sql .= " AND sgm_count <> sgm_count_new "; }
         $o_result = $this->db->query($s_sql);
         $a_row = $o_result->result();
-        
         $s_apid = count($a_row)>0 ? $a_row[0]->bs_m_api_id : '';
         $s_shop_name = count($a_row)>0 ? $a_row[0]->bs_shop_name : '';        
         if ($s_apid == ''){ return 'error:The ApiID is NULL' ;}
@@ -249,7 +250,7 @@ class AdMTSyncStorageM extends CI_Model {
     /**
      * 异常日志
      * @param type $s_mt_id
-     * @param type $s_msg
+     * @param string $s_msg
      * @return type
      */
     private function logUpdateEx($s_mt_id, $s_msg) {
@@ -318,7 +319,7 @@ class AdMTSyncStorageM extends CI_Model {
      * @param type $i_page
      * @param type $i_rows
      * @param type $a_get
-     * @return type
+     * @return mixed
      */
     public function getLogStockList($i_page, $i_rows, $a_get){
         $i_end = $i_page * $i_rows;
@@ -427,5 +428,20 @@ class AdMTSyncStorageM extends CI_Model {
         $this->db->query($s_sql);
         $i_rows = $this->db->affected_rows();
         return $i_rows;
+    }
+
+    /**
+     * 获得所有有差异的门店列表
+     * @return mixed
+     * @author zongjun.lan
+     */
+    public function getAllDiffShop()
+    {
+        $s_sql = "SELECT DISTINCT(sgm_bs_m_id) `id`, bs_shop_name `text` "
+            . "FROM v_shop_goods_mt_unfreeze "
+            . "LEFT JOIN base_shop_info ON bs_m_id=sgm_bs_m_id "
+            . "WHERE sgm_price_diff = 1 OR sgm_count_diff = 1 ";
+        $o_query = $this->db->query($s_sql);
+        return $o_query->result();
     }
 }

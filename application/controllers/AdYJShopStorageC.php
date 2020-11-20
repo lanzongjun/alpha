@@ -116,7 +116,7 @@ class AdYJShopStorageC extends CI_Controller {
         $this->load->library('upload', $config);
         $result = $this->upload->do_upload('file_csv');
         if (!$result) {
-            $error = array(state => '0', 'error' => $this->upload->display_errors());
+            $error = array('state' => '0', 'error' => $this->upload->display_errors());
             echo json_encode($error);
         } else {
             $data = $this->upload->data();

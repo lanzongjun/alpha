@@ -9,42 +9,52 @@
         <script type="text/javascript" src="<?php echo base_url("/resource/admin/jquery.easyui.min.js") ?>"></script>
     </head>
     <body>
-        <table id="dg" class="easyui-datagrid" toolbar="#dom_toolbar1" data-options="fit:true,title:'美团-门店商品',footer:'#dom_tb_ft',rownumbers:true,singleSelect:true,method:'get',url:'../<?php echo $c_name; ?>/getList/',pagination:true,pageSize:50,pageList: [50, 100, 200, 300]">
+        <table id="mtsg_dg" class="easyui-datagrid" toolbar="#dom_toolbar1" data-options="fit:true,title:'美团-门店商品',footer:'#dom_tb_ft',rownumbers:true,singleSelect:true,method:'get',url:'../<?php echo $c_name; ?>/getList/',pagination:true,pageSize:50,pageList: [50, 100, 200, 300]">
             <thead>
                 <tr>
                     <th data-options="width:100,align:'center',field:'sgm_shop_name'">店铺名称</th>
                     <th data-options="width:130,align:'center',field:'sgm_barcode'">商品条形码</th>
-                    <th data-options="width:180,align:'center',field:'sgm_gname'">商品名称</th>
+                    <th data-options="width:300,align:'center',field:'sgm_gname'">商品名称</th>
                     <th data-options="width:70,align:'center',field:'sgm_price'">销售价格</th>
                     <th data-options="width:65,align:'center',field:'sgm_count'">库存数量</th>
                     <th data-options="width:60,align:'center',field:'sgm_count_new',formatter:newStorageFormat">库存(新)</th>
                     <th data-options="width:55,align:'center',field:'sgm_weight'">重量(g)</th>
                     <th data-options="width:50,align:'center',field:'sgm_online',formatter:upFormat">上架</th>
-                    <th data-options="width:100,align:'center',field:'sgm_cid'">自定义ID</th>
+                    <th data-options="width:150,align:'center',field:'sgm_cid'">自定义ID</th>
                     <th data-options="width:110,align:'center',field:'sgm_bs_m_id'">店铺美团ID</th>
                 </tr>
             </thead>
         </table>
         <div id="dom_tb_ft" style="padding:2px 5px;">
-            <a id="btn_refresh_storage" href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true">刷新</a>
-            <a id="btn_update_storage" href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true">更新</a>
+            <a id="btn_refresh_storage" href="#" class="easyui-linkbutton" iconCls="icon-tip" plain="true">库存匹配</a>
+            <a id="btn_refresh_price" href="#" class="easyui-linkbutton" iconCls="icon-tip" plain="true">价格匹配</a>
+            <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
+<!--            <a id="btn_refresh_storage" href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true">刷新</a>-->
+<!--            <a id="btn_update_storage" href="#" class="easyui-linkbutton" iconCls="icon-reload" plain="true">更新</a>-->
             <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
             <a href="#" class="easyui-menubutton" data-options="menu:'#dom_sub_upload_stock',iconCls:'icon-reload'" plain="true">上传库存</a>
             <a href="#" class="easyui-menubutton" data-options="menu:'#dom_sub_upload_sku',iconCls:'icon-reload'" plain="true">下载SKU列表</a>
             <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
-            <a id="btn_freeze_storage" href="#" class="easyui-linkbutton" iconCls="icon-lock" plain="true">冻结库存</a>
-            <a id="btn_unfreeze_storage" href="#" class="easyui-linkbutton" iconCls="icon-lock" plain="true">解冻库存</a>
+
+            <a href="#" class="easyui-menubutton" data-options="menu:'#dom_sub_freeze_stock',iconCls:'icon-lock'" plain="true">库存冻结</a>
+
             <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
             <a id="btn_show_new_goods" href="#" class="easyui-linkbutton" iconCls="icon-down" plain="true">未上线商品</a>
             <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
         </div>
         <div id="dom_sub_upload_stock" style="width:150px;">
             <div id="btn_sync_log" data-options="iconCls:'icon-man'">日志记录</div>
-            <div id="btn_sync_online" data-options="iconCls:'icon-reload'">上传库存</div>
+            <div id="btn_sync_online" data-options="iconCls:'icon-reload'">整体更新</div>
+            <div id="btn_sync_online_diff" data-options="iconCls:'icon-reload'">差异更新</div>
         </div>
         <div id="dom_sub_upload_sku" style="width:150px;">
             <div id="btn_sync_sku_log" data-options="iconCls:'icon-man'">日志记录</div>
-            <div id="btn_sync_sku_list" data-options="iconCls:'icon-reload'">下载SKU列表</div>
+            <div id="btn_sync_mt_sku_list" data-options="iconCls:'icon-reload'">下载SKU</div>
+            <div id="btn_sync_mt_sku_diff" data-options="iconCls:'icon-reload'">差异下载</div>
+        </div>
+        <div id="dom_sub_freeze_stock" style="width:150px;">
+            <div id="btn_freeze_storage" data-options="iconCls:'icon-lock'">冻结</div>
+            <div id="btn_unfreeze_storage" data-options="iconCls:'icon-lock'">解冻</div>
         </div>
         <div id="dom_toolbar1">
             <div>                  
@@ -158,5 +168,7 @@
             var __s_c_name = '<?php echo $c_name; ?>';
         </script>
         <script src="<?php echo base_url("/resource/admin/baseConfig/MTShopGoods.js?" . rand()) ?>" type="text/javascript"></script>
+        <script src="<?php echo base_url("/resource/admin/baseConfig/MTShopGoods.SyncStorage.js?" . rand()) ?>" type="text/javascript"></script>
+        <script src="<?php echo base_url("/resource/admin/baseConfig/MTShopGoods.SyncSKU.js?" . rand()) ?>" type="text/javascript"></script>
     </body>
 </html>

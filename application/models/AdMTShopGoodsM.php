@@ -259,8 +259,8 @@ class AdMTShopGoodsM extends CI_Model {
 
     /**
      * 刷新库存
-     * @param type $s_shop_id
-     * @return string
+     * @param string $s_shop_id
+     * @return array
      */
     function refreshStorage($s_shop_id = '') {
         log_message('debug', "美团店铺库存管理-刷新库存");
@@ -295,7 +295,104 @@ class AdMTShopGoodsM extends CI_Model {
         log_message('debug', "受影响记录数:" . $i_rows);
         $o_result['state'] = true;
         $o_result['msg'] = "美团店铺库存管理 <br>刷新库存-完成<br>受影响记录数:$i_rows";
+        $this->refreshStorageDiffFlag();
         return $o_result;
     }
+
+    /**
+     * 刷新库存差异标志
+     */
+    private function refreshStorageDiffFlag()
+    {
+        $s_sql_reset = "UPDATE shop_goods_mt SET sgm_count_diff=0 ";
+        log_message('debug', "SQL文:$s_sql_reset");
+        try {
+            $this->db->query($s_sql_reset);
+        } catch (Exception $e) {
+            log_message('error', '[美团店铺库存管理-刷新库存差异标志-重置]时发生错误！\r\n' . $e->getMessage());
+        }
+        $i_rows_reset = $this->db->affected_rows();
+        log_message('debug', "受影响记录数:" . $i_rows_reset);
+
+        $s_sql_diff = "UPDATE shop_goods_mt SET sgm_count_diff=1 WHERE sgm_count <> sgm_count_new ";
+        log_message('debug', "SQL文:$s_sql_diff");
+        try {
+            $this->db->query($s_sql_diff);
+        } catch (Exception $e) {
+            log_message('error', '[美团店铺库存管理-刷新库存差异标志-有差异]时发生错误！\r\n' . $e->getMessage());
+        }
+        $i_rows_diff = $this->db->affected_rows();
+        log_message('debug', "受影响记录数:" . $i_rows_diff);
+    }
+
+    /**
+     * 刷新零售价
+     * @param string $s_shop_id
+     * @return array
+     */
+    public function refreshPrice($s_shop_id = '')
+    {
+        log_message('debug', "美团店铺库存管理-刷新库存");
+        $o_result = array(
+            'state' => false,
+            'msg' => ''
+        );
+        $s_where = $s_shop_id == '' ? '' : "WHERE sgm_bs_m_id='$s_shop_id' ";
+        $s_sql_update0 = "UPDATE $this->__table_name SET sgm_price_new=0 $s_where";
+        log_message('debug', "SQL文:$s_sql_update0");
+        try {
+            $this->db->query($s_sql_update0);
+        } catch (Exception $e) {
+            log_message('error', '[美团店铺库存管理-刷新零售价-重置库存]时发生错误！\r\n' . $e->getMessage());
+            $o_result['state'] = false;
+            $o_result['msg'] = "[美团店铺库存管理-刷新零售价-重置库存]时发生错误！\r\n" . $e->getMessage();
+            return $o_result;
+        }
+        $s_sql_update = "UPDATE $this->__table_name INNER JOIN base_shop_storage_yj "
+            . "ON bssy_org_code = sgm_bs_org_sn AND bssy_barcode = sgm_barcode "
+            . "SET sgm_price_new = bssy_sale_price $s_where";
+        log_message('debug', "SQL文:$s_sql_update");
+        try {
+            $this->db->query($s_sql_update);
+        } catch (Exception $e) {
+            log_message('error', '[美团店铺库存管理-刷新零售价-更新库存]时发生错误！\r\n' . $e->getMessage());
+            $o_result['state'] = false;
+            $o_result['msg'] = "[美团店铺库存管理-刷新零售价-更新库存]时发生错误！\r\n" . $e->getMessage();
+            return $o_result;
+        }
+        $i_rows = $this->db->affected_rows();
+        log_message('debug', "受影响记录数:" . $i_rows);
+        $o_result['state'] = true;
+        $o_result['msg'] = "美团店铺库存管理 <br>刷新零售价-完成<br>受影响记录数:$i_rows";
+        $this->refreshPriceDiffFlag();
+        return $o_result;
+    }
+
+    /**
+     * 刷新零售价差异标志
+     */
+    public function refreshPriceDiffFlag()
+    {
+        $s_sql_reset = "UPDATE shop_goods_mt SET sgm_price_diff=0 ";
+        log_message('debug', "SQL文:$s_sql_reset");
+        try {
+            $this->db->query($s_sql_reset);
+        } catch (Exception $e) {
+            log_message('error', '[美团店铺库存管理-刷新零售价差异标志-重置]时发生错误！\r\n' . $e->getMessage());
+        }
+        $i_rows_reset = $this->db->affected_rows();
+        log_message('debug', "受影响记录数:" . $i_rows_reset);
+
+        $s_sql_diff = "UPDATE shop_goods_mt SET sgm_price_diff=1 WHERE sgm_price <> sgm_price_new AND sgm_price_new > 0";
+        log_message('debug', "SQL文:$s_sql_diff");
+        try {
+            $this->db->query($s_sql_diff);
+        } catch (Exception $e) {
+            log_message('error', '[美团店铺库存管理-刷新零售价差异标志-有差异]时发生错误！\r\n' . $e->getMessage());
+        }
+        $i_rows_diff = $this->db->affected_rows();
+        log_message('debug', "受影响记录数:" . $i_rows_diff);
+    }
+
 
 }

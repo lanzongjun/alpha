@@ -103,9 +103,9 @@ class AdMTShopGoodsC extends CI_Controller {
     
     function syncOnlineStorage() {
         $s_m_id = isset($_POST['mid']) ? $_POST['mid'] : '';
-        
+        $b_diff = isset($_POST['diff']) ? true : false;
         $this->load->model('AdMTSyncStorageM');
-        $o_result = $this->AdMTSyncStorageM->syncOnlineStorage($s_m_id);
+        $o_result = $this->AdMTSyncStorageM->syncOnlineStorage($s_m_id, $b_diff);
         echo json_encode($o_result);;        
     }
     
@@ -141,6 +141,16 @@ class AdMTShopGoodsC extends CI_Controller {
         $o_result = $this->AdMTShopGoodsM->refreshStorage($s_m_id);     
         echo json_encode($o_result);
     }
+
+    /**
+     * 刷新零售价
+     */
+    function refreshPrice() {
+        $s_m_id = isset($_POST['oid']) ? $_POST['oid'] : '';
+        $this->load->model($this->_s_model);
+        $o_result = $this->AdMTShopGoodsM->refreshPrice($s_m_id);
+        echo json_encode($o_result);
+    }
     
     /**
      * 刷新库存
@@ -149,6 +159,13 @@ class AdMTShopGoodsC extends CI_Controller {
         $s_m_id = isset($_POST['oid']) ? $_POST['oid'] : '';
         $this->load->model($this->_s_model);
         $o_result = $this->AdMTShopGoodsM->updateStorage($s_m_id);     
+        echo json_encode($o_result);
+    }
+
+    function getAllDiffShop()
+    {
+        $this->load->model('AdMTSyncStorageM');
+        $o_result = $this->AdMTSyncStorageM->getAllDiffShop();
         echo json_encode($o_result);
     }
 
