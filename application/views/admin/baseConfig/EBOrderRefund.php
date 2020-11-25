@@ -14,7 +14,7 @@
                 <table id="dg" toolbar="#d_eboir_toolbar" class="easyui-datagrid" data-options="fit:true,rownumbers:true,singleSelect:true,method:'get',url:'../<?php echo $c_name; ?>/getList/'">
                     <thead>
                         <tr>
-                            <th data-options="width:100,align:'center',field:'order_id'">订单号</th>
+                            <th data-options="width:120,align:'center',field:'order_id'">订单号</th>
                             <th data-options="width:150,align:'center',field:'name'">门店名称</th>
                             <th data-options="width:60,align:'center',field:'refund_type'">退款类型</th>
                             <th data-options="width:150,align:'center',field:'reason'">退款原因</th>

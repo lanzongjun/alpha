@@ -25,7 +25,7 @@ class AdMTOrderRefundC extends CI_Controller {
      */
     function getList() {
         $this->load->model($this->_s_model);
-        $o_result = $this->AdMTOrderInfoM->getRefundList();
+        $o_result = $this->AdMTOrderInfoM->getApplyRefundList();
         echo json_encode($o_result);
     }
     
@@ -50,7 +50,7 @@ class AdMTOrderRefundC extends CI_Controller {
             echo json_encode($o_result);
         } else {
             $this->load->model($this->_s_model);
-            $o_result = $this->AdMTOrderInfoM->getRefundDetail($l_order_id);
+            $o_result = $this->AdMTOrderInfoM->getApplyRefundDetail($l_order_id);
             echo json_encode($o_result);
         }
     }

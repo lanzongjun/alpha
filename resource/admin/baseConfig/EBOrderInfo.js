@@ -60,11 +60,13 @@ function init() {
 function doSearch(){
     var s_db = $('#q_date_begin').val();
     var s_de = $('#q_date_end').val();
+    var s_oi = $('#q_order_id').val();
     var s_sid = $('#q_shop').combobox('getValue');
     
     $('#dg').datagrid('load', {
         s_db: s_db,
         s_de: s_de,
+        s_oi: s_oi,
         s_sid: s_sid
     });
 }

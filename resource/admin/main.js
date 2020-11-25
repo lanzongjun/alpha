@@ -44,7 +44,7 @@ function OrderMonitor(){
 }
 
 $(function () {
-    OrderMonitor();
+    //OrderMonitor();
     $('#nav_base_eb_ShopGoods').bind('click', function () {
         beforeOpen();
         doShowShopGoods();
@@ -88,6 +88,11 @@ $(function () {
     $('#nav_base_OrderInfoEB_Refund').bind('click', function () {
         beforeOpen();
         doShowEBOrdersRefundInfo();
+    });
+
+    $('#nav_base_OrderInfoEB_Refund_Detail').bind('click', function () {
+        beforeOpen();
+        doShowEBOrdersRefundDetail();
     });
     
     $('#nav_yj_cash_pool').bind('click', function () {
@@ -138,6 +143,11 @@ $(function () {
     $('#nav_base_OrderInfoMT_Refund').bind('click', function () {
         beforeOpen();
         doOrderInfoMtRefund();
+    });
+
+    $('#nav_base_OrderInfoMT_Refund_Detail').bind('click', function () {
+        beforeOpen();
+        doOrderInfoMtRefundDetail();
     });
     
     $('#nav_base_OrderInfoMT').bind('click', function () {
@@ -203,6 +213,15 @@ function doOrderInfoMtToDo(){
 function doOrderInfoMtRefund(){
     $('#layout_center').panel({
         href: '../AdMTOrderRefundC',
+        onLoad: function () {
+
+        }
+    });
+}
+
+function doOrderInfoMtRefundDetail(){
+    $('#layout_center').panel({
+        href: '../AdMTOrderRefundDetailC',
         onLoad: function () {
 
         }
@@ -322,6 +341,15 @@ function doShowEBOrdersRefundInfo(){
         href: '../AdEBOrderRefundC',
         onLoad: function () {
             
+        }
+    });
+}
+
+function doShowEBOrdersRefundDetail(){
+    $('#layout_center').panel({
+        href: '../AdEBOrderRefundDetailC',
+        onLoad: function () {
+
         }
     });
 }

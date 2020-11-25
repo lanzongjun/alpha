@@ -24,13 +24,17 @@ function doSyncOnline() {
 
 function doSyncShop() {
     $.messager.progress('close');
-    if (__i_sync_index >= __a_sync_shops.length){return ;}
+    if (__i_sync_index >= __a_sync_shops.length){
+        $("#mtsg_dg").datagrid('reload');
+        return ;
+    }
     var o_data = __a_sync_shops[__i_sync_index++];
+    var s_per = __i_sync_index+'/'+__a_sync_shops.length;
     var s_mid = o_data.id;
     var s_shop_name = o_data.text;
     win_progress = $.messager.progress({
         title:'Please waiting',
-        msg:'正在更新[美团-'+s_shop_name+']线上库存......'
+        msg:'正在更新[美团-'+s_shop_name+']线上库存['+s_per+']......'
     });
     $.ajax({
         url: '../' + __s_c_name + '/syncOnlineStorage',
@@ -150,7 +154,7 @@ function doSyncShopDiff() {
         __a_sync_shops = [];
         __i_sync_index = 0;
         win_progress = null;
-        $("#dg").datagrid('reload');
+        $("#mtsg_dg").datagrid('reload');
         return ;
     }
     var o_data = __a_sync_shops[__i_sync_index++];

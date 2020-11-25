@@ -35,6 +35,7 @@
                 <div>
                     <input id="q_date_begin" class="easyui-datebox" labelWidth="20" style="width:130px;" label="从:" labelPosition="left" data-options="formatter:myformatter,parser:myparser"/>
                     <input id="q_date_end" class="easyui-datebox" labelWidth="20" style="width:130px;" label="至:" labelPosition="left" data-options="formatter:myformatter,parser:myparser"/>
+                    <input id="q_order_id" class="easyui-textbox" labelWidth="60" style="width:200px;" label="订单号:" labelPosition="left"/>
                     <input id="q_shop" class="easyui-combobox" labelWidth="45" style="width:170px;" label='店铺:' labelPosition='left' data-options="url:'../AdShopInfoYJC/getShopMtIdList', method:'get',valueField:'id', textField:'text'" />
                     <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
                     <a id="btn_search" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>

@@ -17,6 +17,8 @@ class AdMTOrderInfoM extends CI_Model {
     var $_tbn_order_detail = 'order_detail';
     var $_tbn_order_refund = 'order_refund';
     var $_tbn_order_refund_detail = 'order_refund_detail';
+    public $_tbn_apply_order_refund = 'apply_order_refund';
+    public $_tbn_apply_order_refund_detail = 'apply_order_refund_detail';
     
     function __construct() {
         parent::__construct();        
@@ -25,6 +27,8 @@ class AdMTOrderInfoM extends CI_Model {
         $this->_tbn_order_detail = $this->db->dbprefix($this->_tbn_order_detail);
         $this->_tbn_order_refund = $this->db->dbprefix($this->_tbn_order_refund);
         $this->_tbn_order_refund_detail = $this->db->dbprefix($this->_tbn_order_refund_detail);
+        $this->_tbn_apply_order_refund = $this->db->dbprefix($this->_tbn_apply_order_refund);
+        $this->_tbn_apply_order_refund_detail = $this->db->dbprefix($this->_tbn_apply_order_refund_detail);
     }
 
     function getTextByStateNum($enum_state) {
@@ -129,20 +133,53 @@ class AdMTOrderInfoM extends CI_Model {
         return $a_result;
     }
     
-    function getRefundList(){
+    function getApplyRefundList(){
         $s_sql = "SELECT R.order_id,R.notify_type,I.wm_order_id_view,I.wm_poi_name,"
                 . "R.refund_type,R.reason,R.money,R.res_type,R.is_appeal "
-                . "FROM $this->_tbn_order_refund R LEFT JOIN $this->_tbn_order_info I "
+                . "FROM $this->_tbn_apply_order_refund R LEFT JOIN $this->_tbn_order_info I "
                 . "ON R.order_id=I.order_id ORDER BY R.update_datetime DESC, R.res_type ASC";
         $o_result = $this->db->query($s_sql);
         return $o_result->result();
     }
     
-    function getRefundDetail($l_order_id){
+    function getApplyRefundDetail($l_order_id){
         $s_sql = "SELECT order_id,food_name,upc,count,food_price,origin_food_price,refund_price "
-                . "FROM $this->_tbn_order_refund_detail WHERE order_id=$l_order_id ";
+                . "FROM $this->_tbn_apply_order_refund_detail WHERE order_id=$l_order_id ";
         $o_result = $this->db->query($s_sql);
         return $o_result->result();
+    }
+
+    public function getRefundList()
+    {
+        $query = $this->db;
+        $query->join("$this->_tbn_order_info I", "{$this->_tbn_order_refund}.order_id=I.order_id", 'left');
+        $query->select("
+        {$this->_tbn_order_refund}.order_id,
+        {$this->_tbn_order_refund}.apply_type_desc,
+        {$this->_tbn_order_refund}.apply_reason,
+        {$this->_tbn_order_refund}.money,
+        {$this->_tbn_order_refund}.refund_type_desc,
+        {$this->_tbn_order_refund}.res_reason,
+        {$this->_tbn_order_refund}.res_type_desc,
+        {$this->_tbn_order_refund}.ctime,
+        {$this->_tbn_order_refund}.utime,
+        I.wm_order_id_view,
+        I.wm_poi_name, 
+        ");
+        $query->order_by("{$this->_tbn_order_refund}.update_datetime DESC, {$this->_tbn_order_refund}.res_type ASC");
+        $result = $query->get("$this->_tbn_order_refund")->result_array();
+
+        return $result;
+    }
+
+    public function getRefundDetail($l_order_id)
+    {
+        $query = $this->db;
+        $query->where('order_id', intval($l_order_id));
+        $query->select('order_id,food_name,upc,count,food_price,origin_food_price,refund_price');
+        $result = $query->get($this->_tbn_order_refund_detail)->result_array();
+
+        return $result;
     }
     
     /**
@@ -188,6 +225,9 @@ class AdMTOrderInfoM extends CI_Model {
         }
         if (isset($a_get['s_de']) && $a_get['s_de']){
             $s_where .= " AND ctime <= '".$a_get['s_de']." 23:59:59'";
+        }
+        if (isset($a_get['s_oi']) && $a_get['s_oi']) {
+            $s_where .= " AND order_id='".$a_get['s_oi']."'";
         }
         if (isset($a_get['s_sid']) && $a_get['s_sid']) {
             $s_where .= " AND app_poi_code='".$a_get['s_sid']."'";

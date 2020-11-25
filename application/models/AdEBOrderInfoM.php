@@ -242,6 +242,9 @@ class AdEBOrderInfoM extends CI_Model {
         if (isset($a_get['s_de']) && $a_get['s_de']){
             $s_where .= " AND oi.create_time <= '".$a_get['s_de']." 23:59:59'";
         }
+        if (isset($a_get['s_oi']) && $a_get['s_oi']) {
+            $s_where .= " AND oi.order_id='".$a_get['s_oi']."'";
+        }
         if (isset($a_get['s_sid']) && $a_get['s_sid']) {
             $s_where .= " AND os.shop_id='".$a_get['s_sid']."'";
         }

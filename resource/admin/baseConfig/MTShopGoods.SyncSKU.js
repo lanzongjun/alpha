@@ -42,13 +42,19 @@ function doSyncSkuListAll(){
 
 function doSyncMtSkuList() {
     $.messager.progress('close');
-    if (__i_sync_index_sl >= __a_sync_shops_sl.length){return ;}
+    if (__i_sync_index_sl >= __a_sync_shops_sl.length){
+        __a_sync_shops_sl = [];
+        __i_sync_index_sl = 0;
+        win_progress_sl = null;
+        return ;
+    }
     var o_data = __a_sync_shops_sl[__i_sync_index_sl++];
+    var s_per = __i_sync_index_sl+'/'+__a_sync_shops_sl.length;
     var s_mid = o_data.id;
     var s_shop_name = o_data.text;
     win_progress_sl = $.messager.progress({
         title:'Please waiting',
-        msg:'正在同步[美团-'+s_shop_name+']本地商品信息......'
+        msg:'正在同步[美团-'+s_shop_name+']本地商品信息['+s_per+']......'
     });
     $.ajax({
         url: '../' + __s_c_name + '/syncSkuList',

@@ -118,6 +118,9 @@
                                             <span><a id='nav_base_OrderInfoEB_Refund' href="#">退单</a></span>
                                         </li>
                                         <li>
+                                            <span><a id='nav_base_OrderInfoEB_Refund_Detail' href="#">退单详情</a></span>
+                                        </li>
+                                        <li>
                                             <span><a id='nav_base_OrderInfoEB' href="#">历史订单</a></span>
                                         </li>
                                     </ul>
@@ -141,6 +144,9 @@
                                         </li>
                                         <li>
                                             <span><a id='nav_base_OrderInfoMT_Refund' href="#">退单</a></span> 
+                                        </li>
+                                        <li>
+                                            <span><a id='nav_base_OrderInfoMT_Refund_Detail' href="#">退单详情</a></span>
                                         </li>
                                         <li>
                                             <span><a id='nav_base_OrderInfoMT' href="#">历史订单</a></span>
