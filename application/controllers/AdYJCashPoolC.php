@@ -27,7 +27,7 @@ class AdYJCashPoolC extends CI_Controller {
         $i_page = isset($_GET['page']) ? $_GET['page'] : 1;
         $i_rows = isset($_GET['rows']) ? $_GET['rows'] : 50;
         $this->load->model($this->_s_model);
-        $o_result = $this->AdYJCashPoolM->_getList($i_page,$i_rows);
+        $o_result = $this->AdYJCashPoolM->_getList($i_page,$i_rows,$_GET);
         echo json_encode($o_result);
     }
 

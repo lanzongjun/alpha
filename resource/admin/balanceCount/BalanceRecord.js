@@ -44,6 +44,9 @@ $(function () {
     $('#q_brt2_btn_search').bind('click', function () {
         doSearchBalList();
     });
+    $('#q_brt1_btn_remove').bind('click', function () {
+        doRemoveRecord();
+    });
 
     $('#br_w_preview').window({
         onOpen: function () {
@@ -152,6 +155,7 @@ function doDaliy2BalList(){
                 type: "POST",
                 data: {'ids': a_ids},
                 success: function (data) {
+                    $.messager.progress('close');
                     var o_res = $.parseJSON(data);
                     $.messager.show({
                         title:'更新结果',
@@ -263,6 +267,41 @@ function coverData() {
                             $("#br_dg_preview").datagrid("loadData", {total: 0, rows: []});
                             $("#br_dg").datagrid("reload");
                             $('#br_w_preview').window('close');
+                        }
+                    });
+                }
+            });
+        }
+    });
+}
+
+function doRemoveRecord(){
+    var o_row = $("#br_dg").datagrid('getSelected');
+    if (!o_row || !o_row.brd_id || !o_row.brd_vr_id) {
+        $.messager.alert('错误', '请选择要操作的记录', 'error');
+        return;
+    }
+    $.messager.confirm('确认', '此操作将删除选中的结算记录，并且无法恢复，是否确认删除?', function (r) {
+        if (r) {
+            $.messager.confirm('确认', '此操作将同时删除相关的核销记录，请再次确认此操作?', function (r) {
+                if (r) {
+                    $.messager.progress({
+                        title:'Please waiting',
+                        msg:'正在将选中信息更新至结算记录中......'
+                    });
+                    $.ajax({
+                        url: '../' + __s_c_name + '/doRemoveRecord/',
+                        type: "POST",
+                        data: {"id": o_row.brd_id,'vrid':o_row.brd_vr_id},
+                        success: function (data) {
+                            $.messager.progress('close');
+                            var o_response = $.parseJSON(data);
+                            if (o_response.state) {
+                                $.messager.alert('信息', o_response.msg, 'info');
+                            } else {
+                                $.messager.alert('错误', o_response.msg, 'error');
+                            }
+                            $("#br_dg").datagrid("reload");
                         }
                     });
                 }

@@ -66,7 +66,7 @@
                     </div>
                 </div>
             </div>
-            <div data-options="region:'east',split:true,title:'附加信息'" style="width:400px;">
+            <div data-options="region:'east',split:true,title:'附加信息',collapsible:true,collapsed:true,hideCollapsedContent:false" style="width:400px;">
                 <div class="easyui-layout" data-options="fit:true">
                     <div data-options="region:'north',border:false,collapsible:false" style="height:40px">
                         <div style="padding:10px;">

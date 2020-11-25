@@ -75,21 +75,51 @@ class AdYJCashPoolM extends CI_Model {
      * 获得列表
      * @return type
      */
-    function _getList($i_page, $i_rows) {        
+    function _getList($i_page, $i_rows, $a_get) {        
         $i_end = $i_page * $i_rows;
         $i_start = $i_end - $i_rows;
-        $s_sql = "SELECT * FROM $this->__table_name ORDER BY cpd_bill_code DESC "
-                . "LIMIT $i_start,$i_rows";
+        $s_where = $this->getWhere($a_get);
+        $s_sql = "SELECT cpd_province,cpd_date,cpd_time,cpd_shop,cpd_bs_sale_sn,"
+                . "cpd_bs_org_sn,cpd_amount,cpd_pay_account,cpd_pay_name,"
+                . "cpd_system,cpd_biz_type,cpd_cus_name,cpd_cash_cmp,cpd_update_time,"
+                . "cpd_pool_account,cpd_bill_code,cpd_cash_way,cpd_system2,"
+                . "cpd_remaining_sum,cpd_according_to,cpd_system_cusid,"
+                . "cpd_trade_state,cpd_vr_id,cpd_vr_unique,cpd_vr_state "
+                . "FROM $this->__table_name $s_where "
+                . "ORDER BY cpd_bill_code DESC LIMIT $i_start,$i_rows";
         $o_result = $this->db->query($s_sql);
-        $i_total = $this->_getTotal();
+        $i_total = $this->_getTotal($s_where);
         return array(
             'total' => $i_total,
             'rows' => $o_result->result()
         );
     }
     
-    function _getTotal() {
-        $s_sql = "SELECT COUNT(1) t_num FROM $this->__table_name ";
+    /**
+     * 获得过滤条件
+     * @param type $a_get
+     * @return string
+     */
+    function getWhere($a_get){
+        $s_where = "WHERE 1=1 ";
+        if (isset($a_get['s_d']) && $a_get['s_d']) {
+            $s_where = " INNER JOIN $this->__tbn_shop_info ON bs_org_sn=cpd_bs_org_sn "
+                    . "WHERE bs_district='".$a_get['s_d']."'";
+        }
+        if (isset($a_get['s_db']) && $a_get['s_db']){
+            $s_where .= " AND cpd_date >= '".$a_get['s_db']."'";
+        }
+        if (isset($a_get['s_de']) && $a_get['s_de']){
+            $s_where .= " AND cpd_date <= '".$a_get['s_de']."'";
+        }
+        if (isset($a_get['s_sid']) && $a_get['s_sid']) {
+            $s_where .= " AND cpd_bs_org_sn=".$a_get['s_sid'];
+        }
+        return $s_where;
+    }
+    
+    function _getTotal($s_where) {
+        $s_sql = "SELECT COUNT(1) t_num FROM $this->__table_name $s_where ";
         $o_result = $this->db->query($s_sql);
         $a_line = $o_result->result();
         return $a_line[0]->t_num-0;

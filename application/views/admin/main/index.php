@@ -70,8 +70,11 @@
                                     <span><a id='nav_balance_record' href="#">结算记录</a></span>
                                 </li>
 <!--                                <li>
-                                    <span><a id='nav_verification' href="#">核销管理</a></span>
+                                    <span><a id='nav_verification' href="#">核销</a></span>
                                 </li>-->
+                                <li>
+                                    <span><a id='nav_invoice_manage' href="#">发票关联</a></span>
+                                </li>
                             </ul>
                         </li>
                         <li>

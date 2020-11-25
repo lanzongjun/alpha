@@ -54,6 +54,55 @@ class Php_spread_sheet_lib {
         unset($spreadsheet);
     }
     
+    /**
+     * 导出多个工作表的工作簿
+     * @param type $a_struct
+     *  $o_struct = array(
+            'sheetName'=>'工作表名',
+            'column'=> array(
+                    'title' => '列名称',
+                    'field' => '字段名'
+                ),
+            'record'=>$o_return->result()
+        );
+     *  $a_struct = array($o_struct1,$o_struct2,$o_struct3...);
+     *              
+     * @param type $s_file_name
+     * @param type $b_row_no
+     * @param type $b_row_title
+     */
+    public function outputMultipleSheet($a_struct,$s_file_name, $b_row_no=true, $b_row_title=true){
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+//        $sheet = $spreadsheet->getActiveSheet();
+        
+        foreach ($a_struct as $o_struct){
+            $o_worksheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($spreadsheet,$o_struct['sheetName']);
+            $spreadsheet->addSheet($o_worksheet,0);
+            $a_column = $o_struct['column'];
+            $a_record = $o_struct['record'];
+            $this->export($o_worksheet, $a_column, $a_record, $b_row_no, $b_row_title);
+        }
+        
+        $this->saveAsStream($spreadsheet, $s_file_name);
+    }
+    
+    public function saveAsStream($spreadsheet,$s_file_name){
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment;filename=\"$s_file_name.xlsx\"");
+        header('Cache-Control: max-age=0');
+        // If you're serving to IE 9, then the following may be needed
+        header('Cache-Control: max-age=1');
+        // If you're serving to IE over SSL, then the following may be needed
+//    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
+//    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT'); // always modified
+        header('Cache-Control: cache, must-revalidate'); // HTTP/1.1
+        header('Pragma: public'); // HTTP/1.0
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit;
+    }
+    
     public function loadData($a_column,$s_file_path,$i_first_row=2){
         $a_data = array();
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($s_file_path);

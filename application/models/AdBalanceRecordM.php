@@ -9,6 +9,8 @@ class AdBalanceRecordM extends CI_Model {
     var $__table_name = 'balance_record_daily';    
     var $_tbn_ba_shop = 'balance_account_shop';
     var $_tbn_ba = 'balance_account';
+    var $_tbn_cash_pool = 'base_cash_pool';
+    var $_tbn_vr = 'verify_record';
     
     function __construct() {
         parent::__construct();
@@ -60,8 +62,9 @@ class AdBalanceRecordM extends CI_Model {
         $i_end = $i_page * $i_rows;
         $i_start = $i_end - $i_rows;
         $s_where = $this->getWhere($a_get);
-        $s_sql = "SELECT brd_date_begin,brd_date_end,brd_shop_name,brd_org_sn,"
-                . "brd_balance_amount,brd_memo FROM $this->__table_name $s_where "
+        $s_sql = "SELECT brd_id,brd_date_begin,brd_date_end,brd_shop_name,brd_org_sn,"
+                . "brd_balance_amount,brd_memo,brd_vr_id,brd_vr_unique,brd_vr_state "
+                . "FROM $this->__table_name $s_where "
                 . "ORDER BY brd_date_end DESC,brd_org_sn ASC LIMIT $i_start,$i_rows";
         $o_result = $this->db->query($s_sql);
         $i_total = $this->_getTotal($s_where);
@@ -310,6 +313,38 @@ class AdBalanceRecordM extends CI_Model {
         return $this->db->trans_complete();
     }
 
+    function doRemoveRecord($s_id,$s_vrid){
+        $o_result['state'] = false;
+        $o_result['msg'] = 'FAULT';
+        $this->db->trans_start();
+        $s_sql1 = "UPDATE $this->_tbn_cash_pool SET cpd_vr_id='',cpd_vr_unique=-1,"
+                . "cpd_vr_state=0 WHERE cpd_vr_id='$s_vrid'";
+        log_message('debug', "SQL文:$s_sql1");
+        $this->db->query($s_sql1);
+        $s_sql2 = "UPDATE $this->__table_name SET brd_vr_id='',brd_vr_unique=-1,"
+                . "brd_vr_state=0 WHERE brd_vr_id='$s_vrid' ";
+        log_message('debug', "SQL文:$s_sql2");
+        $this->db->query($s_sql2);
+        $s_sql3 = "DELETE FROM $this->__table_name WHERE brd_id='$s_id'";
+        log_message('debug', "SQL文:$s_sql3");
+        $this->db->query($s_sql3);
+        $s_sql4 = "DELETE FROM $this->_tbn_vr WHERE vr_id='$s_vrid'";
+        log_message('debug', "SQL文:$s_sql4");
+        $this->db->query($s_sql4);
+        try{
+            $b_result = $this->db->trans_complete();
+            log_message('debug', "事务执行结果:$b_result");
+            $o_result['state'] = $b_result;
+            $o_result['msg'] = "删除结算记录:".($b_result?'success':'fault');
+            return $o_result;
+        } catch (Exception $e) {
+            log_message('error', '删除结算记录-异常中断！\r\n' . $e->getMessage());
+            $o_result['state'] = false;
+            $o_result['msg'] = "删除结算记录-异常中断！\r\n" . $e->getMessage();
+            return $o_result;
+        }
+    }
+    
     var $fields = array(
         'brd_date_begin' => array(
             'type' => 'DATE',

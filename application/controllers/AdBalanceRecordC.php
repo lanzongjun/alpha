@@ -113,4 +113,18 @@ class AdBalanceRecordC extends CI_Controller {
         $this->load->model($this->_s_model);
         $this->AdBalanceRecordM->_dropTempTable($s_tbn);        
     }
+    
+    function doRemoveRecord(){
+        $s_id = isset($_POST['id']) ? $_POST['id'] : '';
+        $s_vrid = isset($_POST['vrid']) ? $_POST['vrid'] : '';
+        if ($s_id == '' || $s_vrid == '') {
+            $o_result['state'] = false;
+            $o_result['msg'] = "缺少关键参数";
+            echo json_encode($o_result);
+            return;
+        }
+        $this->load->model($this->_s_model);
+        $o_result = $this->AdBalanceRecordM->doRemoveRecord($s_id,$s_vrid);
+        echo json_encode($o_result);
+    }
 }

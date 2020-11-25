@@ -44,7 +44,7 @@ function OrderMonitor(){
 }
 
 $(function () {
-    //OrderMonitor();
+    OrderMonitor();
     $('#nav_base_eb_ShopGoods').bind('click', function () {
         beforeOpen();
         doShowShopGoods();
@@ -73,6 +73,21 @@ $(function () {
     $('#nav_verification').bind('click', function () {
         beforeOpen();
         doShowVerification();
+    });
+    
+    $('#nav_verify_count').bind('click', function () {
+        beforeOpen();
+        doShowVerifyCount();
+    });
+    
+    $('#nav_verify_record').bind('click', function () {
+        beforeOpen();
+        doShowVerifyRecord();
+    });
+    
+    $('#nav_invoice_manage').bind('click', function () {
+        beforeOpen();
+        doShowInvoiceManage();
     });
     
     $('#nav_base_OrdersInfoEB_TODO').bind('click', function () {
@@ -382,6 +397,30 @@ function doShowBalanceRecord(){
 function doShowVerification(){
     $('#layout_center').panel({
         href: '../AdVerificationC',
+        onLoad: function () {
+        }
+    });
+}
+
+function doShowVerifyCount(){
+    $('#layout_center').panel({
+        href: '../AdVerifyCountC',
+        onLoad: function () {
+        }
+    });
+}
+
+function doShowVerifyRecord(){
+    $('#layout_center').panel({
+        href: '../AdVerifyRecordC',
+        onLoad: function () {
+        }
+    });
+}
+
+function doShowInvoiceManage(){
+    $('#layout_center').panel({
+        href: '../AdInvoiceManageC',
         onLoad: function () {
         }
     });

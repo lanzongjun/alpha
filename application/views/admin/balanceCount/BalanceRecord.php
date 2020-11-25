@@ -13,7 +13,7 @@
             </thead>
         </table>
     </div>
-    <div data-options="region:'east',border:false" style="width:50%;">
+    <div data-options="region:'east',border:false" style="width:620px">
         <table id="br_dg2" title="每日结算" class="easyui-datagrid" toolbar="#d_br_toolbar2" data-options="checkOnSelect:false,singleSelect:false,fit:true,rownumbers:true,method:'get',url:'../<?php echo $c_name; ?>/getBalList/',onLoadSuccess:onBalListLoad,pagination:true,pageSize:50,pageList: [50, 100, 200, 300]">
             <thead>
                 <tr>
@@ -62,13 +62,14 @@
         <input id="q_brt1_shop" class="easyui-combobox" labelWidth="45" style="width:170px;" label='店铺:' labelPosition='left' data-options="url:'../AdShopInfoYJC/getShopOrgList', method:'get',valueField:'id', textField:'text'" />
         <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
         <a id="q_brt1_btn_search" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search'">查询</a>
+        <a id="q_brt1_btn_remove" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">删除</a>
         <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
     </div>
 </div>
 <div id="d_br_toolbar2">
     <div>
         <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
-        <a id="q_brt2_btn_append" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'">追加记录</a>
+        <a id="q_brt2_btn_append" href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'">追加</a>
         <span class="datagrid-btn-separator" style="vertical-align: middle;display:inline-block;float:none"></span>
         <input id="q_brt2_date_begin" class="easyui-datebox" labelWidth="20" style="width:130px;" label="从:" labelPosition="left" data-options="formatter:myformatter,parser:myparser"/>
         <input id="q_brt2_date_end" class="easyui-datebox" labelWidth="20" style="width:130px;" label="至:" labelPosition="left" data-options="formatter:myformatter,parser:myparser"/>

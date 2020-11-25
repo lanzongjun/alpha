@@ -2,7 +2,6 @@ var toolbar1 = [{
         text: '预导入',
         iconCls: 'icon-add',
         handler: function () {
-            $('#cp_win_input').window('open');
         }
     }];
 
@@ -37,6 +36,13 @@ $(function () {
        }
    });
    
+   $('#q_cpt1_btn_search').bind('click', function () {
+        doSearchList();
+    });
+    $('#q_cpt1_btn_input').bind('click', function () {
+        $('#cp_win_input').window('open');
+    });
+   
     //预导入CSV文件
     $('#btn_do_input').bind('click', function () {
         $("#form_input").form("submit", {
@@ -64,6 +70,20 @@ $(function () {
         });
     });
 });
+
+function doSearchList(){
+    var s_db = $('#q_cpt1_date_begin').val();
+    var s_de = $('#q_cpt1_date_end').val();
+    var s_sid = $('#q_cpt1_shop').combobox('getValue');
+    var s_d = $('#q_cpt1_district').combobox('getValue');
+
+    $('#yjcp_dg').datagrid('load', {
+        s_db: s_db,
+        s_de: s_de,
+        s_sid: s_sid,
+        s_d: s_d
+    });
+}
 
 function deletePreviewData(){
     var s_tbn = $('#yjcp_hid_preview').val();

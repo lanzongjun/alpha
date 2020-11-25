@@ -389,11 +389,13 @@ class AdBalanceStageSelectM extends CI_Model {
                 continue;
             }
             $i_success++;
-            $s_sql_detail = $this->getEBOrderPartRefundDetailSQL($o_info->a_products);
-            log_message('debug', "SQL文:$s_sql_detail");
-            $this->db->query($s_sql_detail);
-            $i_rows2 = $this->db->affected_rows();
-            log_message('debug', "受影响记录数:$i_rows2");
+            if (is_array($o_info->a_products) && count($o_info->a_products)>0) {
+                $s_sql_detail = $this->getEBOrderPartRefundDetailSQL($o_info->a_products);
+                log_message('debug', "SQL文:$s_sql_detail");
+                $this->db->query($s_sql_detail);
+                $i_rows2 = $this->db->affected_rows();
+                log_message('debug', "受影响记录数:$i_rows2");
+            }
         }
         $b_result = $this->db->trans_complete();
         $o_result = array(

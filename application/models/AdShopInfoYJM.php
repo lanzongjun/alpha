@@ -99,6 +99,13 @@ class AdShopInfoYJM extends CI_Model {
         return $o_result->result();
     }
     
+    function getDistrictList(){
+        $s_sql = "SELECT DISTINCT(bs_district) `id`, bs_district `text` "
+                . "FROM base_shop_info";
+        $o_result = $this->db->query($s_sql);
+        return $o_result->result();
+    }
+    
     function getShopEbIdList(){
         $s_sql = "SELECT bs_e_id `id`,bs_shop_name `text` "
                 . "FROM base_shop_info WHERE bs_e_id <> '' "

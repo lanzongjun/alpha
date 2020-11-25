@@ -47,29 +47,34 @@ class AdShopInfoYJC extends CI_Controller {
     }
     
     function getShopOrgList() {
+        $o_data_default = array('id'=>'','text'=>'所有','selected'=>'true');
         $this->load->model($this->_s_model);
         $o_result = $this->AdShopInfoYJM->getShopOrgList();
-        if (count($o_result) > 0) {
-            $o_result[0]->selected = 'true';
-        }
+        array_unshift($o_result,$o_data_default);
+        echo json_encode($o_result);
+    }
+    
+    function getDistrictList(){
+        $o_data_default = array('id'=>'','text'=>'所有','selected'=>'true');
+        $this->load->model($this->_s_model);
+        $o_result = $this->AdShopInfoYJM->getDistrictList();
+        array_unshift($o_result,$o_data_default);
         echo json_encode($o_result);
     }
     
     function getShopEbIdList() {
+        $o_data_default = array('id'=>'','text'=>'所有','selected'=>'true');
         $this->load->model($this->_s_model);
         $o_result = $this->AdShopInfoYJM->getShopEbIdList();
-        if (count($o_result) > 0) {
-            $o_result[0]->selected = 'true';
-        }
+        array_unshift($o_result,$o_data_default);
         echo json_encode($o_result);
     }
     
     function getShopMtIdList(){
+        $o_data_default = array('id'=>'','text'=>'所有','selected'=>'true');
         $this->load->model($this->_s_model);
         $o_result = $this->AdShopInfoYJM->getShopMtIdList();
-        if (count($o_result) > 0) {
-            $o_result[0]->selected = 'true';
-        }
+        array_unshift($o_result,$o_data_default);
         echo json_encode($o_result);
     }
     
